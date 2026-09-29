@@ -43,30 +43,59 @@
     --n-bad-bg:#fff1ea;
     --shadow-btn:0 2px 10px rgba(0,0,0,.12);
   }
-  #theme-btn{position:fixed;top:16px;right:16px;z-index:10;padding:9px 14px;border-radius:10px;cursor:pointer;
-    border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 13px/1 var(--font);box-shadow:var(--shadow-btn)}
-  #theme-btn:hover{border-color:var(--accent);color:var(--accent)}
-  #theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .page-btns{position:fixed;top:16px;right:16px;z-index:10;display:flex;gap:8px}
+  .page-btns button,.page-btns a{padding:9px 14px;border-radius:10px;cursor:pointer;text-decoration:none;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 14px/1 var(--font);box-shadow:var(--shadow-btn)}
+  .page-btns button:hover,.page-btns a:hover{border-color:var(--accent);color:var(--accent)}
+  .page-btns button:focus-visible,.page-btns a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   a{color:var(--accent)}
-  @media print{#theme-btn{display:none}}
+  @media print{.page-btns,.toc{display:none}}
+  /* Type: 17px base, major-third scale (x1.25): 13.6 · 17 · 21.25 · 26.5 · 33
+     Space: 4px grid (4 8 12 16 24 32 48 64). Prose capped at 32em, ~68 characters in the system font (Baymard 50-75, WCAG 1.4.8 <=80). */
+  :root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--measure:32em}
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font)}
-  .wrap{max-width:980px;margin:0 auto;padding:48px 22px 90px}
-  h1{font-size:30px;letter-spacing:-.03em;line-height:1.15;margin:0 0 10px}
-  .lede{font-size:18px;color:var(--dim);max-width:44em;margin:0 0 8px}
-  .stamp{font:12px/1.4 var(--mono);color:var(--dim)}
-  h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin:44px 0 14px;font-weight:700}
-  h3{font-size:17px;margin:20px 0 8px}
-  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:920px;margin:0 auto;padding:var(--s8) var(--s5) 96px}
+  p,li{max-width:var(--measure)}
+  p{margin:0 0 var(--s4)}
+  a{text-underline-offset:.18em;text-decoration-thickness:1px}
+  a:hover{text-decoration-thickness:2px}
+
+  /* headings: more space above than below, so each heading groups with its section (proximity) */
+  h1,h2,h3{color:var(--ink);text-wrap:balance;scroll-margin-top:var(--s5)}
+  h1{font-size:2.125rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 var(--s3);font-weight:750}
+  h2{font-size:1.625rem;line-height:1.25;letter-spacing:-.01em;font-weight:700;
+     margin:var(--s8) 0 var(--s4);padding-top:var(--s5);border-top:1px solid var(--line)}
+  h3{font-size:1.25rem;line-height:1.3;font-weight:650;margin:var(--s6) 0 var(--s2)}
+  header{margin-bottom:var(--s6)}
+  .lede{font-size:1.1875rem;line-height:1.55;color:var(--dim);max-width:var(--measure);margin:0 0 var(--s3)}
+  .stamp{font:13.5px/1.5 var(--mono);color:var(--dim)}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
   .dim{color:var(--dim)}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:22px 0}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
-  .stat b{display:block;font-size:24px;letter-spacing:-.03em}
-  .stat span{display:block;font-size:12px;color:var(--dim);margin-top:4px}
-  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin:16px 0}
+  p.dim{font-size:.95rem}
+
+  /* index (NN/G: at the top, link text matches headings, anchors land just below the top edge) */
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4) var(--s5) var(--s3);margin:0 0 var(--s6)}
+  .toc-label{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 var(--s2)}
+  .toc ol{margin:0;padding-left:1.4em;columns:2 280px;column-gap:var(--s6)}
+  .toc li{break-inside:avoid;margin:0 0 var(--s2);line-height:1.4}
+  .toc ol ol{columns:auto;padding-left:1.1em;margin-top:var(--s2);list-style:none}
+  .toc ol ol li{font-size:.92rem;margin-bottom:var(--s1)}
+  .toc a{text-decoration:none;color:var(--ink)}
+  .toc a:hover,.toc a:focus-visible{color:var(--accent);text-decoration:underline}
+  .toc > ol > li::marker{color:var(--dim);font-variant-numeric:tabular-nums}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s3);margin:0 0 var(--s6)}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4) var(--s4) var(--s4)}
+  .stat b{display:block;font-size:1.5rem;line-height:1.2;letter-spacing:-.02em}
+  .stat span{display:block;font-size:.875rem;line-height:1.45;color:var(--dim);margin-top:var(--s2)}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--radius);padding:var(--s5);margin:var(--s4) 0 var(--s5)}
   .callout.err{border-left-color:var(--err)} .callout.warn{border-left-color:var(--warn)} .callout.ok{border-left-color:var(--ok)}
-  .callout p{margin:6px 0}
-  .pill{display:inline-block;font:700 11px/1.2 var(--mono);padding:3px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+  .callout h3{margin:0 0 var(--s3)}
+  .callout p{margin:0 0 var(--s3)} .callout p:last-child{margin-bottom:0}
+  .pill{display:inline-block;font:700 12px/1.3 var(--mono);padding:3px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
   .live{background:var(--p-live-bg);color:var(--p-live-fg);border-color:var(--p-live-bd)}
   .shadow{background:var(--p-shadow-bg);color:var(--p-shadow-fg);border-color:var(--p-shadow-bd)}
   .down{background:var(--p-bad-bg);color:var(--p-bad-fg);border-color:var(--p-bad-bd);border-width:2px}
@@ -76,39 +105,78 @@
   .stat b.s-err{color:var(--err)} .stat b.s-warn{color:var(--warn)} .stat b.s-ok{color:var(--ok)}
   .callout h3 .ico{display:inline-block;width:1.3em}
   .callout.err h3 .ico{color:var(--err)} .callout.warn h3 .ico{color:var(--warn)} .callout h3 .ico{color:var(--accent)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
-  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:0 10px 8px;border-bottom:1px solid var(--line)}
-  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
-  .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px}
+
+  table{width:100%;border-collapse:collapse;margin:var(--s3) 0 var(--s4);font-size:.94rem;line-height:1.5;font-variant-numeric:tabular-nums}
+  th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:0 var(--s3) var(--s2);border-bottom:2px solid var(--line)}
+  td{padding:var(--s3);border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .flow{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin:0 0 var(--s4)}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:var(--s2) var(--s3);font-size:.875rem;line-height:1.4}
   .node.bad{border:2px dashed var(--err);background:var(--n-bad-bg)}
   .node.bad::before{content:"✕ ";color:var(--err);font-weight:700}
   .arrow{color:var(--dim)}
-  ol.steps{padding-left:0;list-style:none;counter-reset:s}
-  ol.steps li{counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px 12px 56px;margin:10px 0;position:relative}
-  ol.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font:700 13px var(--mono);color:var(--accent)}
-  ol.steps b{display:block;margin-bottom:2px}
-  ol.steps span{color:var(--dim);font-size:14px}
-  .fix{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:12px 0}
-  .fix h3{margin:0 0 6px;font-size:16px}
-  .fix p{margin:6px 0;font-size:14.5px}
-  .fix .meta{font:12px/1.5 var(--mono);color:var(--dim)}
-  details{margin:8px 0}
-  summary{cursor:pointer;color:var(--accent);font-size:14px;font-weight:600}
+
+  ol.steps{padding-left:0;list-style:none;counter-reset:s;margin:var(--s4) 0}
+  ol.steps li{max-width:none;counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4) var(--s5) var(--s4) 60px;margin:0 0 var(--s3);position:relative}
+  ol.steps li::before{content:counter(s);position:absolute;left:var(--s4);top:var(--s4);width:28px;height:28px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font:700 14px var(--mono);color:var(--accent)}
+  ol.steps b{display:block;margin-bottom:var(--s1);font-size:1.05rem}
+  ol.steps span{display:block;color:var(--dim);font-size:.95rem;line-height:1.55;max-width:var(--measure)}
+
+  .fix{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s5);margin:0 0 var(--s4)}
+  .fix h3{margin:0 0 var(--s2)}
+  .fix p{margin:0 0 var(--s3)} .fix > :last-child{margin-bottom:0}
+  .fix .meta{font:13px/1.5 var(--mono);color:var(--dim);margin-bottom:var(--s3)}
+  details{margin:var(--s3) 0;border-top:1px solid var(--line);padding-top:var(--s3)}
+  summary{cursor:pointer;color:var(--accent);font-size:.95rem;font-weight:600;line-height:1.4;padding:var(--s1) 0}
   summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-  pre{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font:12.5px/1.5 var(--mono);color:var(--ink);margin:8px 0}
-  pre code{background:none;border:0;padding:0;font-size:inherit}
+  details[open] > summary{margin-bottom:var(--s2)}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:var(--s4);overflow-x:auto;font:13.5px/1.6 var(--mono);color:var(--ink);margin:0 0 var(--s3);tab-size:2}
+  pre code{background:none;border:0;padding:0;font-size:inherit;overflow-wrap:normal}
+
+  @media (max-width:640px){
+    html,body{font-size:16px}
+    .wrap{padding:88px var(--s4) var(--s8)}
+    h1{font-size:1.75rem} h2{font-size:1.375rem;margin-top:var(--s7)} h3{font-size:1.15rem}
+    .callout,.fix{padding:var(--s4)}
+    ol.steps li{padding-left:52px}
+    table{font-size:.875rem} td{padding:var(--s2)}
+  }
 </style>
 </head>
 <body>
-<button type="button" id="theme-btn" onclick="nreToggleTheme()">☾ Dark mode</button>
+<div class="page-btns"><a href="#top" aria-label="Back to top">↑ Top</a><button type="button" id="theme-btn" onclick="nreToggleTheme()">☾ Dark mode</button></div>
 <div class="wrap">
 
-<header>
+<header id="top">
   <h1>Zoom webinar automation — findings &amp; next steps</h1>
   <p class="lede">Zoom webinar → registrants → ActiveCampaign + Close, in n8n. The registration path has been down since Sep 24. Zapier covered every registrant, so nothing was lost. Goal: full switch from Zapier to n8n this week.</p>
-  <div class="stamp">Hailey · 2026-09-28 · read-only review, nothing changed · <a href="overview.html" style="color:var(--accent)">full migration status page →</a></div>
+  <div class="stamp">Hailey · 2026-09-28 · read-only review, nothing changed · <a href="overview.html">full migration status page →</a></div>
 </header>
+
+<nav class="toc" aria-labelledby="toc-label">
+  <p class="toc-label" id="toc-label">On this page</p>
+  <ol>
+    <li><a href="#inventory">What's in n8n today</a></li>
+    <li><a href="#issues">Issues</a>
+      <ol>
+        <li><a href="#issue-1">1 · Registration path stopped Sep 24 (critical)</a></li>
+        <li><a href="#issue-2">2 · 322a has dropped every new Zoom webinar since Sep 22</a></li>
+        <li><a href="#issue-3">3 · Downstream workflows idle</a></li>
+      </ol></li>
+    <li><a href="#next">Next steps (this week)</a></li>
+    <li><a href="#fix322a">Fixing 322a (draft)</a></li>
+    <li><a href="#fix323a">Fixing 323a · Webinar Registration Hub (draft)</a></li>
+    <li><a href="#surge">Fixing 232b under lead surges (drafts)</a>
+      <ol>
+        <li><a href="#fix-a">A · Raise n8n's database connection pool</a></li>
+        <li><a href="#fix-b">B · Slow the write-bus drainer from every 2 seconds to every 30 seconds</a></li>
+        <li><a href="#fix-c">C · Stop spawning a sub-workflow per lead for the ledger</a></li>
+        <li><a href="#fix-d">D · Queue registrants instead of processing them live</a></li>
+      </ol></li>
+    <li><a href="#also">Also noted (outside Zoom scope)</a></li>
+  </ol>
+</nav>
 
 <div class="stats">
   <div class="stat"><b class="s-err">✕ Down</b><span>Registration hub (323a) since Sep 24, 4:37 PM</span></div>
@@ -117,7 +185,7 @@
   <div class="stat"><b class="s-ok">✓ 0 lost</b><span>Zapier handled all registrants</span></div>
 </div>
 
-<h2>What's in n8n today</h2>
+<h2 id="inventory">What's in n8n today</h2>
 <table>
   <tr><th>Workflow</th><th>State</th><th>Last 7 days</th></tr>
   <tr><td><code>322a</code> New Zoom Webinar Created</td><td><span class="pill live">active</span></td><td>2 "ok" (both did nothing) · 3 error</td></tr>
@@ -132,10 +200,10 @@
 </table>
 <p class="dim">Kill switches in <code>SETTINGS.webinar_modes</code>: ZOOM_ADD, CRM_WRITES, BRAND_LOG, OUTBOUND_COMMS = true · REG_CUTOVER = false.</p>
 
-<h2>Issues</h2>
+<h2 id="issues">Issues</h2>
 
 <div class="callout err">
-  <h3><span class="ico" aria-hidden="true">✕</span>1 · Registration path stopped Sep 24 (critical)</h3>
+  <h3 id="issue-1"><span class="ico" aria-hidden="true">✕</span>1 · Registration path stopped Sep 24 (critical)</h3>
   <div class="flow">
     <span class="node">ActiveCampaign tag webhook</span><span class="arrow">→</span>
     <span class="node bad">232b router · failing under surges</span><span class="arrow">→</span>
@@ -148,7 +216,7 @@
 </div>
 
 <div class="callout err">
-  <h3><span class="ico" aria-hidden="true">✕</span>2 · 322a has dropped every new Zoom webinar since Sep 22</h3>
+  <h3 id="issue-2"><span class="ico" aria-hidden="true">✕</span>2 · 322a has dropped every new Zoom webinar since Sep 22</h3>
   <div class="flow">
     <span class="node">Zoom webhook</span><span class="arrow">→</span>
     <span class="node bad">wait 5 min (before replying)</span><span class="arrow">→</span>
@@ -164,11 +232,11 @@
 </div>
 
 <div class="callout">
-  <h3><span class="ico" aria-hidden="true">ℹ</span>3 · Downstream workflows idle</h3>
+  <h3 id="issue-3"><span class="ico" aria-hidden="true">ℹ</span>3 · Downstream workflows idle</h3>
   <p>322b, 323b and 323c have had 0 runs in 7 days. They depend on issues 1 and 2 and should resume once those are fixed.</p>
 </div>
 
-<h2>Next steps (this week)</h2>
+<h2 id="next">Next steps (this week)</h2>
 <p class="dim">Each step changes a production workflow, so each one needs Matt's approval.</p>
 <ol class="steps">
   <li><b>Make 232b survive surges</b><span>✓ AC webhooks confirmed active (Sep 28), so no re-registering is needed. Apply the <a href="#surge">232b surge fixes</a> so the next surge doesn't cause failures.</span></li>
@@ -344,7 +412,7 @@ rollback: set the flags back to empty</code></pre>
 <p class="dim">Nothing below has been applied. Each fix needs Matt's approval. Suggested order: A and B first (quick, lowest risk), then C, then D.</p>
 
 <div class="fix">
-  <h3>A · Raise n8n's database connection pool</h3>
+  <h3 id="fix-a">A · Raise n8n's database connection pool</h3>
   <p class="meta">Infra · n8n container config → <code>local.n8n_env</code> · applies to main and workers</p>
   <p>Biggest single improvement. The worst case is 11 containers × 10 = 110 connections. Confirm the database can take that before applying (see the pre-check).</p>
   <details><summary>Show the change</summary>
@@ -370,7 +438,7 @@ terraform apply -target=... (same four targets)
 </div>
 
 <div class="fix">
-  <h3>B · Slow the write-bus drainer from every 2 seconds to every 30 seconds</h3>
+  <h3 id="fix-b">B · Slow the write-bus drainer from every 2 seconds to every 30 seconds</h3>
   <p class="meta">n8n · <code>235w. Write Bus Drain</code> · <code>every_2s</code> trigger</p>
   <p>235w already keeps draining until the queue is empty within one run (up to 20 loops of 150 rows), so a 30-second schedule costs at most about 30 seconds of delay. It cuts about 43,000 runs a day to about 2,900.</p>
   <details><summary>Show the change</summary>
@@ -381,7 +449,7 @@ rollback: set secondsInterval back to 2</code></pre>
 </div>
 
 <div class="fix">
-  <h3>C · Stop spawning a sub-workflow per lead for the ledger</h3>
+  <h3 id="fix-c">C · Stop spawning a sub-workflow per lead for the ledger</h3>
   <p class="meta">n8n · <code>232b</code> · nodes <code>ledger (subto|zdb|gator|tc|sus)</code> → <code>923x. Execution Ledger Tap</code></p>
   <p>Every lead starts an extra run just to log that it arrived. <code>execution_data</code> already records name, email, phone and ac_id on the same run. Disable the five ledger nodes, or replace them with a single direct Postgres insert into the ledger table. Either removes one saved run per lead.</p>
   <details><summary>Show the change</summary>
@@ -392,7 +460,7 @@ rollback: re-enable the five nodes</code></pre>
 </div>
 
 <div class="fix">
-  <h3>D · Queue registrants instead of processing them live</h3>
+  <h3 id="fix-d">D · Queue registrants instead of processing them live</h3>
   <p class="meta">n8n · <code>232b</code> + new <code>323f. Registrant Queue Drain</code> (draft in HAILEY folder) · marketing database</p>
   <p>This is the fix for surges we can't control. 232b only saves the registrant to a queue table and returns straight away. A drainer pulls <b>20 every 30 seconds</b> (about 2,400 an hour) and calls 323a one at a time. A surge makes the queue longer instead of causing failures, AC always gets a fast success reply, and every registrant has a row to audit.</p>
   <div class="flow">
@@ -480,12 +548,12 @@ WHERE id = $1;</code></pre>
   <p class="dim">Tuning: raise <code>LIMIT</code> or shorten the interval for faster throughput. A stuck row is retried after 10 minutes. Rollback: re-enable the old Register node in 232b and disable <code>enqueue_registrant</code>. Any queued rows can be drained later.</p>
 </div>
 
-<h2>Also noted (outside Zoom scope)</h2>
+<h2 id="also">Also noted (outside Zoom scope)</h2>
 <table>
   <tr><th>Item</th><th>Issue</th></tr>
   <tr><td><code>333a</code> WJ Registrant Poller</td><td>Every write fails because the "Append All Registrants" column setup is out of date. Missing columns: registered_at, fname, lname, join_url, lead_id, rep, sms_verified.</td></tr>
   <tr><td><code>235d</code> Lead → Add Tag in AC</td><td>Intermittent 500 errors from the Gator AC account (Signed Up → student tag).</td></tr>
-  <tr><td><a href="overview.html#wave1" style="color:var(--accent)">Migration status page</a></td><td>Lists 343a AMA as "live poll", but that workflow is inactive.</td></tr>
+  <tr><td><a href="overview.html#wave1">Migration status page</a></td><td>Lists 343a AMA as "live poll", but that workflow is inactive.</td></tr>
 </table>
 
 </div>
