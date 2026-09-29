@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zoom webinar live test — 2026-09-29</title>
+<script>
+  (function(){var t;try{t=localStorage.getItem('nre-theme')}catch(e){}
+    document.documentElement.setAttribute('data-theme',t||'light');})();
+  function nreToggleTheme(){
+    var r=document.documentElement,t=r.getAttribute('data-theme')==='light'?'dark':'light';
+    r.setAttribute('data-theme',t);try{localStorage.setItem('nre-theme',t)}catch(e){}
+    nreThemeLabel();
+  }
+  function nreThemeLabel(){
+    var b=document.getElementById('theme-btn');if(!b)return;
+    var light=document.documentElement.getAttribute('data-theme')==='light';
+    b.textContent=light?'☾ Dark mode':'☀ Light mode';
+    b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');
+  }
+  document.addEventListener('DOMContentLoaded',nreThemeLabel);
+</script>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2333; --line:#30363d;
+    --ink:#e6edf3; --dim:#9aa4ae; --accent:#58a6ff;
+    --ok:#56b4e9; --warn:#e69f00; --err:#ff8a5c;
+    --p-live-bg:#0d2a45; --p-live-fg:#8fcdf5; --p-live-bd:#1f5a8a;
+    --p-shadow-bg:#2a1a3a; --p-shadow-fg:#d8b0f2; --p-shadow-bd:#5a3a7a;
+    --p-bad-bg:#3a1a0c; --p-bad-fg:#ffa27a; --p-bad-bd:#7a3514;
+    --n-bad-bg:#24140b;
+    --shadow-btn:0 4px 18px rgba(0,0,0,.35);
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:ui-monospace, "SF Mono", Menlo, monospace; --radius:10px;
+  }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --panel:#f6f8fa; --panel2:#eef1f5; --line:#c9d1d9;
+    --ink:#1f2328; --dim:#57606a; --accent:#0550ae;
+    --ok:#0072b2; --warn:#9a5b00; --err:#b83d00;
+    --p-live-bg:#e0efff; --p-live-fg:#0550ae; --p-live-bd:#9cc7f0;
+    --p-shadow-bg:#f3e8fb; --p-shadow-fg:#6f2da8; --p-shadow-bd:#d2b3ea;
+    --p-bad-bg:#ffe8dc; --p-bad-fg:#a33a00; --p-bad-bd:#f2b08e;
+    --n-bad-bg:#fff1ea;
+    --shadow-btn:0 2px 10px rgba(0,0,0,.12);
+  }
+  .page-btns{position:fixed;top:16px;right:16px;z-index:10;display:flex;gap:8px}
+  .page-btns button,.page-btns a{padding:9px 14px;border-radius:10px;cursor:pointer;text-decoration:none;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 14px/1 var(--font);box-shadow:var(--shadow-btn)}
+  .page-btns button:hover,.page-btns a:hover{border-color:var(--accent);color:var(--accent)}
+  .page-btns button:focus-visible,.page-btns a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  a{color:var(--accent)}
+  @media print{.page-btns,.toc{display:none}}
+  :root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--measure:32em}
+  *{box-sizing:border-box}
+  @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:920px;margin:0 auto;padding:var(--s8) var(--s5) 96px}
+  p,li{max-width:var(--measure)}
+  p{margin:0 0 var(--s4)}
+  a{text-underline-offset:.18em;text-decoration-thickness:1px}
+  a:hover{text-decoration-thickness:2px}
+  h1,h2,h3{color:var(--ink);text-wrap:balance;scroll-margin-top:var(--s5)}
+  h1{font-size:2.125rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 var(--s3);font-weight:750}
+  h2{font-size:1.625rem;line-height:1.25;letter-spacing:-.01em;font-weight:700;
+     margin:var(--s8) 0 var(--s4);padding-top:var(--s5);border-top:1px solid var(--line)}
+  h3{font-size:1.25rem;line-height:1.3;font-weight:650;margin:var(--s6) 0 var(--s2)}
+  header{margin-bottom:var(--s6)}
+  .lede{font-size:1.1875rem;line-height:1.55;color:var(--dim);max-width:var(--measure);margin:0 0 var(--s3)}
+  .stamp{font:13.5px/1.5 var(--mono);color:var(--dim)}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+  .dim{color:var(--dim)}
+  p.dim{font-size:.95rem}
+
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4) var(--s5) var(--s3);margin:0 0 var(--s6)}
+  .toc-label{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 var(--s2)}
+  .toc ol{margin:0;padding-left:1.4em;columns:2 280px;column-gap:var(--s6)}
+  .toc li{break-inside:avoid;margin:0 0 var(--s2);line-height:1.4}
+  .toc a{text-decoration:none;color:var(--ink)}
+  .toc a:hover,.toc a:focus-visible{color:var(--accent);text-decoration:underline}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s3);margin:0 0 var(--s6)}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4)}
+  .stat b{display:block;font-size:1.5rem;line-height:1.2;letter-spacing:-.02em}
+  .stat span{display:block;font-size:.875rem;line-height:1.45;color:var(--dim);margin-top:var(--s2)}
+  .stat b.s-err{color:var(--err)} .stat b.s-warn{color:var(--warn)} .stat b.s-ok{color:var(--ok)}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--radius);padding:var(--s5);margin:var(--s4) 0 var(--s5)}
+  .callout.err{border-left-color:var(--err)} .callout.warn{border-left-color:var(--warn)} .callout.ok{border-left-color:var(--ok)}
+  .callout h3{margin:0 0 var(--s3)}
+  .callout p{margin:0 0 var(--s3)} .callout p:last-child{margin-bottom:0}
+  .callout h3 .ico{display:inline-block;width:1.3em}
+  .callout.err h3 .ico{color:var(--err)} .callout.warn h3 .ico{color:var(--warn)} .callout h3 .ico{color:var(--accent)}
+  .pill{display:inline-block;font:700 12px/1.3 var(--mono);padding:3px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+  .live{background:var(--p-live-bg);color:var(--p-live-fg);border-color:var(--p-live-bd)}
+  .shadow{background:var(--p-shadow-bg);color:var(--p-shadow-fg);border-color:var(--p-shadow-bd)}
+  .down{background:var(--p-bad-bg);color:var(--p-bad-fg);border-color:var(--p-bad-bd);border-width:2px}
+  .pill.live::before{content:"✓ "}
+  .pill.shadow::before{content:"◐ "}
+  .pill.down::before{content:"✕ "}
+
+  table{width:100%;border-collapse:collapse;margin:var(--s3) 0 var(--s4);font-size:.94rem;line-height:1.5;font-variant-numeric:tabular-nums}
+  th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:0 var(--s3) var(--s2);border-bottom:2px solid var(--line)}
+  td{padding:var(--s3);border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.t{white-space:nowrap;font-family:var(--mono);font-size:.875rem}
+
+  .flow{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin:0 0 var(--s4)}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:var(--s2) var(--s3);font-size:.875rem;line-height:1.4}
+  .node.bad{border:2px dashed var(--err);background:var(--n-bad-bg)}
+  .node.bad::before{content:"✕ ";color:var(--err);font-weight:700}
+  .arrow{color:var(--dim)}
+
+  ol.steps{padding-left:0;list-style:none;counter-reset:s;margin:var(--s4) 0}
+  ol.steps li{max-width:none;counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4) var(--s5) var(--s4) 60px;margin:0 0 var(--s3);position:relative}
+  ol.steps li::before{content:counter(s);position:absolute;left:var(--s4);top:var(--s4);width:28px;height:28px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font:700 14px var(--mono);color:var(--accent)}
+  ol.steps b{display:block;margin-bottom:var(--s1);font-size:1.05rem}
+  ol.steps span{display:block;color:var(--dim);font-size:.95rem;line-height:1.55;max-width:var(--measure)}
+
+  @media (max-width:640px){
+    html,body{font-size:16px}
+    .wrap{padding:88px var(--s4) var(--s8)}
+    h1{font-size:1.75rem} h2{font-size:1.375rem;margin-top:var(--s7)} h3{font-size:1.15rem}
+    .callout{padding:var(--s4)}
+    ol.steps li{padding-left:52px}
+    table{font-size:.875rem} td{padding:var(--s2)}
+  }
+</style>
+</head>
+<body>
+<div class="page-btns"><a href="#top" aria-label="Back to top">↑ Top</a><button type="button" id="theme-btn" onclick="nreToggleTheme()">☾ Dark mode</button></div>
+<div class="wrap">
+
+<header id="top">
+  <h1>Zoom webinar live test — Sep 29</h1>
+  <p class="lede">One test webinar and one test registrant in the Subto Zoom account. n8n received both events and wrote nothing. It stopped at the two known problems from the <a href="./">Sep 28 findings</a>, and the test exposed one new timing gap.</p>
+  <div class="stamp">Hailey · 2026-09-29 · observed only, nothing changed · <a href="./">← main findings page</a></div>
+</header>
+
+<nav class="toc" aria-labelledby="toc-label">
+  <p class="toc-label" id="toc-label">On this page</p>
+  <ol>
+    <li><a href="#timeline">What happened, minute by minute</a></li>
+    <li><a href="#results">Results by workflow</a></li>
+    <li><a href="#confirmed">Confirmed: two known problems</a></li>
+    <li><a href="#new">New: registrants in the first 5 minutes are dropped</a></li>
+    <li><a href="#next">Next steps</a></li>
+  </ol>
+</nav>
+
+<div class="stats">
+  <div class="stat"><b class="s-err">✕ 0 writes</b><span>n8n made no WEBINARS row, AC tag or Close record for the test</span></div>
+  <div class="stat"><b class="s-err">✕ 322a</b><span>Dropped the new webinar, same bug as Sep 22</span></div>
+  <div class="stat"><b class="s-err">✕ 323e</b><span>Dropped the registrant: no WEBINARS row to match</span></div>
+  <div class="stat"><b class="s-warn">⚠ New gap</b><span>A 5-minute window where registrants are always dropped</span></div>
+</div>
+
+<h2 id="timeline">What happened, minute by minute</h2>
+<p class="dim">Times are Pacific. The test webinar was created from the Zoom web portal and scheduled for Oct 4.</p>
+<table>
+  <tr><th>Time</th><th>Event</th></tr>
+  <tr><td class="t">9:41:04</td><td>"Test Webinar" created in Zoom. <code>322a</code> receives <code>webinar.created</code> and goes straight into its 5-minute wait. It doesn't reply to Zoom first.</td></tr>
+  <tr><td class="t">9:42:08</td><td>Test contact registers. <code>323e</code> receives the registrant (name and email, no phone), looks up the webinar in WEBINARS, finds no row, and drops it at <code>not tracked (drop)</code>.</td></tr>
+  <tr><td class="t">9:46:04</td><td><code>322a</code> resumes. The Pulse check finds no Pulse record, so it correctly decides the webinar should be added. <code>skip mint?</code> sends it down the "skip" output anyway, which leads nowhere. The run is marked <b>success</b>.</td></tr>
+</table>
+
+<h2 id="results">Results by workflow</h2>
+<table>
+  <tr><th>Step</th><th>Workflow</th><th>Result</th></tr>
+  <tr><td>Webinar created</td><td><code>322a</code> New Zoom Webinar Created</td><td><span class="pill down">dropped</span> Received, waited, then went down the skip branch</td></tr>
+  <tr><td>Registry write</td><td><code>322d</code> Upsert Webinar</td><td><span class="pill down">not reached</span> No WEBINARS row</td></tr>
+  <tr><td>Scheduling</td><td><code>322b</code> Webinar Scheduler</td><td><span class="pill down">not reached</span></td></tr>
+  <tr><td>Registrant from Zoom</td><td><code>323e</code> Zoom Registrant Webhook → AC Tag</td><td><span class="pill down">dropped</span> Received, no matching webinar</td></tr>
+  <tr><td>Direct registrant</td><td><code>323d</code> Zoom Direct Registrant → AC Tag</td><td><span class="pill shadow">no run</span></td></tr>
+  <tr><td>AC tag → router</td><td><code>232b</code> Lead Events in AC → Router</td><td><span class="pill shadow">no run</span> No tag was applied</td></tr>
+  <tr><td>Registration hub</td><td><code>323a</code> Webinar Registration Hub</td><td><span class="pill down">unpublished</span> Couldn't run either way</td></tr>
+  <tr><td>Zoom add · log</td><td><code>323b</code> · <code>323c</code></td><td><span class="pill shadow">no run</span></td></tr>
+</table>
+<p class="dim">Not checked yet: what Zapier did with the same webinar and registrant.</p>
+
+<h2 id="confirmed">Confirmed: two known problems</h2>
+
+<div class="callout err">
+  <h3><span class="ico" aria-hidden="true">✕</span>322a drops every new webinar</h3>
+  <div class="flow">
+    <span class="node">Zoom webhook</span><span class="arrow">→</span>
+    <span class="node bad">wait 5 min before replying</span><span class="arrow">→</span>
+    <span class="node">Pulse check: "add it"</span><span class="arrow">→</span>
+    <span class="node bad">skip mint? · "skip"</span><span class="arrow">→</span>
+    <span class="node">(nothing)</span>
+  </div>
+  <p>The test reproduced <a href="./#issue-2">issue 2</a> exactly. The workflow hasn't changed since Sep 22. The drafted fix is in <a href="./#fix322a">Fixing 322a</a>.</p>
+</div>
+
+<div class="callout err">
+  <h3><span class="ico" aria-hidden="true">✕</span>323a is still unpublished</h3>
+  <p>Even with a WEBINARS row and an AC tag, the registrant would stop at the hub. See <a href="./#issue-1">issue 1</a> and <a href="./#fix323a">Fixing 323a</a>.</p>
+</div>
+
+<h2 id="new">New: registrants in the first 5 minutes are dropped</h2>
+<div class="callout warn">
+  <h3><span class="ico" aria-hidden="true">⚠</span>Fixing 322a alone won't cover this</h3>
+  <p>322a only writes the WEBINARS row after its 5-minute wait, which gives Pulse time to claim webinars it made. 323e checks for that row the moment someone registers, and drops the registrant if it isn't there yet. The test registration came 64 seconds after the webinar was created, so it was dropped. It would have been dropped even with the IF node fixed.</p>
+  <p>Real webinars rarely get registrants that quickly, but every test like this one will, and so will any webinar someone shares right after creating it.</p>
+  <p><b>Proposed fix (needs approval):</b> when 323e finds no row, it should hold the registrant and look again after the 5-minute window, rather than dropping them. For example, it could park them in the unmatched log and retry once the webinar's row lands.</p>
+</div>
+
+<h2 id="next">Next steps</h2>
+<p class="dim">Each step changes a production workflow or table, so each one needs Matt's approval.</p>
+<ol class="steps">
+  <li><b>Fix and publish 322a</b><span>Apply the <a href="./#fix322a">drafted 322a fix</a>, then re-validate the endpoint in the Zoom Marketplace app.</span></li>
+  <li><b>Add the test webinar and register again</b><span>Add "Test Webinar" to WEBINARS with the 322c backfill form, then register a second test contact. That tests 323e → AC tag → 232b, and it will stop at 323a until the hub is republished.</span></li>
+  <li><b>Close the 5-minute gap in 323e</b><span>Retry unmatched registrants instead of dropping them (<a href="#new">above</a>).</span></li>
+  <li><b>Republish 323a</b><span>Follow <a href="./#fix323a">the 323a plan</a>.</span></li>
+  <li><b>Compare with Zapier, then rerun</b><span>Check what Zapier did for this test. After the fixes, repeat the test end to end, then move on to the <a href="./#next">live side-by-side run and switchover</a>.</span></li>
+  <li><b>Clean up</b><span>Delete "Test Webinar" (Oct 4) from Zoom when testing is done.</span></li>
+</ol>
+
+</div>
+</body>
+</html>
