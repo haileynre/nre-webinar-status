@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zoom webinar automation — status 2026-09-28</title>
+<script>
+  (function(){var t;try{t=localStorage.getItem('nre-theme')}catch(e){}
+    document.documentElement.setAttribute('data-theme',t||'light');})();
+  function nreToggleTheme(){
+    var r=document.documentElement,t=r.getAttribute('data-theme')==='light'?'dark':'light';
+    r.setAttribute('data-theme',t);try{localStorage.setItem('nre-theme',t)}catch(e){}
+    nreThemeLabel();
+  }
+  function nreThemeLabel(){
+    var b=document.getElementById('theme-btn');if(!b)return;
+    var light=document.documentElement.getAttribute('data-theme')==='light';
+    b.textContent=light?'☾ Dark mode':'☀ Light mode';
+    b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');
+  }
+  document.addEventListener('DOMContentLoaded',nreThemeLabel);
+</script>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2333; --line:#30363d;
+    --ink:#e6edf3; --dim:#9aa4ae; --accent:#58a6ff;
+    --ok:#56b4e9; --warn:#e69f00; --err:#ff8a5c;
+    --p-live-bg:#0d2a45; --p-live-fg:#8fcdf5; --p-live-bd:#1f5a8a;
+    --p-shadow-bg:#2a1a3a; --p-shadow-fg:#d8b0f2; --p-shadow-bd:#5a3a7a;
+    --p-bad-bg:#3a1a0c; --p-bad-fg:#ffa27a; --p-bad-bd:#7a3514;
+    --n-bad-bg:#24140b;
+    --shadow-btn:0 4px 18px rgba(0,0,0,.35);
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:ui-monospace, "SF Mono", Menlo, monospace; --radius:10px;
+  }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --panel:#f6f8fa; --panel2:#eef1f5; --line:#c9d1d9;
+    --ink:#1f2328; --dim:#57606a; --accent:#0550ae;
+    --ok:#0072b2; --warn:#9a5b00; --err:#b83d00;
+    --p-live-bg:#e0efff; --p-live-fg:#0550ae; --p-live-bd:#9cc7f0;
+    --p-shadow-bg:#f3e8fb; --p-shadow-fg:#6f2da8; --p-shadow-bd:#d2b3ea;
+    --p-bad-bg:#ffe8dc; --p-bad-fg:#a33a00; --p-bad-bd:#f2b08e;
+    --n-bad-bg:#fff1ea;
+    --shadow-btn:0 2px 10px rgba(0,0,0,.12);
+  }
+  #theme-btn{position:fixed;top:16px;right:16px;z-index:10;padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 13px/1 var(--font);box-shadow:var(--shadow-btn)}
+  #theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+  #theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  a{color:var(--accent)}
+  @media print{#theme-btn{display:none}}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font)}
+  .wrap{max-width:980px;margin:0 auto;padding:48px 22px 90px}
+  h1{font-size:30px;letter-spacing:-.03em;line-height:1.15;margin:0 0 10px}
+  .lede{font-size:18px;color:var(--dim);max-width:44em;margin:0 0 8px}
+  .stamp{font:12px/1.4 var(--mono);color:var(--dim)}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin:44px 0 14px;font-weight:700}
+  h3{font-size:17px;margin:20px 0 8px}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  .dim{color:var(--dim)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:22px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .stat b{display:block;font-size:24px;letter-spacing:-.03em}
+  .stat span{display:block;font-size:12px;color:var(--dim);margin-top:4px}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin:16px 0}
+  .callout.err{border-left-color:var(--err)} .callout.warn{border-left-color:var(--warn)} .callout.ok{border-left-color:var(--ok)}
+  .callout p{margin:6px 0}
+  .pill{display:inline-block;font:700 11px/1.2 var(--mono);padding:3px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+  .live{background:var(--p-live-bg);color:var(--p-live-fg);border-color:var(--p-live-bd)}
+  .shadow{background:var(--p-shadow-bg);color:var(--p-shadow-fg);border-color:var(--p-shadow-bd)}
+  .down{background:var(--p-bad-bg);color:var(--p-bad-fg);border-color:var(--p-bad-bd);border-width:2px}
+  .pill.live::before{content:"✓ "}
+  .pill.shadow::before{content:"◐ "}
+  .pill.down::before{content:"✕ "}
+  .stat b.s-err{color:var(--err)} .stat b.s-warn{color:var(--warn)} .stat b.s-ok{color:var(--ok)}
+  .callout h3 .ico{display:inline-block;width:1.3em}
+  .callout.err h3 .ico{color:var(--err)} .callout.warn h3 .ico{color:var(--warn)} .callout h3 .ico{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:0 10px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px}
+  .node.bad{border:2px dashed var(--err);background:var(--n-bad-bg)}
+  .node.bad::before{content:"✕ ";color:var(--err);font-weight:700}
+  .arrow{color:var(--dim)}
+  ol.steps{padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px 12px 56px;margin:10px 0;position:relative}
+  ol.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font:700 13px var(--mono);color:var(--accent)}
+  ol.steps b{display:block;margin-bottom:2px}
+  ol.steps span{color:var(--dim);font-size:14px}
+  .fix{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:12px 0}
+  .fix h3{margin:0 0 6px;font-size:16px}
+  .fix p{margin:6px 0;font-size:14.5px}
+  .fix .meta{font:12px/1.5 var(--mono);color:var(--dim)}
+  details{margin:8px 0}
+  summary{cursor:pointer;color:var(--accent);font-size:14px;font-weight:600}
+  summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font:12.5px/1.5 var(--mono);color:var(--ink);margin:8px 0}
+  pre code{background:none;border:0;padding:0;font-size:inherit}
+</style>
+</head>
+<body>
+<button type="button" id="theme-btn" onclick="nreToggleTheme()">☾ Dark mode</button>
+<div class="wrap">
+
+<header>
+  <h1>Zoom webinar automation — findings &amp; next steps</h1>
+  <p class="lede">Zoom webinar → registrants → ActiveCampaign + Close, in n8n. The registration path has been down since Sep 24. Zapier covered every registrant, so nothing was lost. Goal: full switch from Zapier to n8n this week.</p>
+  <div class="stamp">Hailey · 2026-09-28 · read-only review, nothing changed · <a href="overview.html" style="color:var(--accent)">full migration status page →</a></div>
+</header>
+
+<div class="stats">
+  <div class="stat"><b class="s-err">✕ Down</b><span>Registration hub (323a) since Sep 24, 4:37 PM</span></div>
+  <div class="stat"><b class="s-warn">⚠ Shadow</b><span>Hub (323a) is shadow-only for every webinar: per-webinar flags are empty</span></div>
+  <div class="stat"><b class="s-err">✕ 2 missed</b><span>Real Zoom webinars dropped by 322a since Sep 22</span></div>
+  <div class="stat"><b class="s-ok">✓ 0 lost</b><span>Zapier handled all registrants</span></div>
+</div>
+
+<h2>What's in n8n today</h2>
+<table>
+  <tr><th>Workflow</th><th>State</th><th>Last 7 days</th></tr>
+  <tr><td><code>322a</code> New Zoom Webinar Created</td><td><span class="pill live">active</span></td><td>2 "ok" (both did nothing) · 3 error</td></tr>
+  <tr><td><code>322d</code> Upsert Webinar</td><td><span class="pill live">active</span></td><td>2,000+ ok · none since Sep 24</td></tr>
+  <tr><td><code>322b</code> Webinar Scheduler</td><td><span class="pill live">active</span></td><td>0 runs</td></tr>
+  <tr><td><code>323a</code> Webinar Registration Hub</td><td><span class="pill down">inactive · unpublished</span></td><td>2,000+ ok · none since Sep 24</td></tr>
+  <tr><td><code>323b</code> Register for Webinar in Zoom</td><td><span class="pill live">active</span></td><td>0 runs</td></tr>
+  <tr><td><code>323c</code> Add to Webinar Registration Log</td><td><span class="pill live">active</span></td><td>0 runs</td></tr>
+  <tr><td><code>323e</code> Zoom Registrant Webhook → AC Tag</td><td><span class="pill shadow">active · shadow</span></td><td>2,000+ ok</td></tr>
+  <tr><td><code>323d</code> Zoom Direct Registrant → AC Tag</td><td><span class="pill shadow">active · draft</span></td><td>143 ok · 2 error</td></tr>
+  <tr><td><code>232b</code> Lead Events in AC → Router (feeds 323a)</td><td><span class="pill live">active</span></td><td>Successful runs aren't saved, so volume is unknown · 7 crashed Sep 25 · 1 error Sep 26</td></tr>
+</table>
+<p class="dim">Kill switches in <code>SETTINGS.webinar_modes</code>: ZOOM_ADD, CRM_WRITES, BRAND_LOG, OUTBOUND_COMMS = true · REG_CUTOVER = false.</p>
+
+<h2>Issues</h2>
+
+<div class="callout err">
+  <h3><span class="ico" aria-hidden="true">✕</span>1 · Registration path stopped Sep 24 (critical)</h3>
+  <div class="flow">
+    <span class="node">ActiveCampaign tag webhook</span><span class="arrow">→</span>
+    <span class="node bad">232b router · failing under surges</span><span class="arrow">→</span>
+    <span class="node bad">323a hub · unpublished</span><span class="arrow">→</span>
+    <span class="node">Close upsert · round robin · Zoom register · AC tag</span>
+  </div>
+  <p>323a was saved without a published version on Sep 24 at 4:37 PM and hasn't run since. Its last run, 43 seconds earlier, was a real Gator registrant. The hub found no matching webinar in WEBINARS and logged it as "unmatched". Nobody on our side meant to turn it off. See <a href="#fix323a">the 323a plan</a>.</p>
+  <p>232b crashed repeatedly on Sep 25 and hit a database connection timeout on Sep 26 (<code>ledger (gator)</code>: "timeout exceeded when trying to connect"). The timeout is n8n running out of connections to its own database during a lead surge. 232b doesn't save successful runs, so we can't tell from n8n how many events it has handled since. See <a href="#surge">Fixing 232b under lead surges</a>.</p>
+  <p><b>✓ Ruled out (Sep 28):</b> the ActiveCampaign webhooks are confirmed active, so AC did not switch them off. With the webhooks live, 323a having no runs since Sep 24 points to 323a itself being unpublished.</p>
+</div>
+
+<div class="callout err">
+  <h3><span class="ico" aria-hidden="true">✕</span>2 · 322a has dropped every new Zoom webinar since Sep 22</h3>
+  <div class="flow">
+    <span class="node">Zoom webhook</span><span class="arrow">→</span>
+    <span class="node bad">wait 5 min (before replying)</span><span class="arrow">→</span>
+    <span class="node">Pulse dedupe lookup</span><span class="arrow">→</span>
+    <span class="node bad">skip mint? · always "skip"</span><span class="arrow">→</span>
+    <span class="node">(nothing)</span>
+  </div>
+  <p>A Pulse dedupe was added on Sep 22. It's meant to skip webinars Pulse already created, and it introduced three bugs:</p>
+  <p><b>The check always says "skip".</b> <code>skip mint?</code> uses a condition format this version of the IF node doesn't read, so every webinar goes down the "skip" branch, which leads nowhere. Runs still show as "success".</p>
+  <p><b>Zoom gets no reply for 5 minutes.</b> Zoom expects a reply within 3 seconds. Its URL-validation ping fails, which can make Zoom disable the webhook.</p>
+  <p><b>The original Zoom data is lost after the wait.</b> Even if the check passed, the next step would read blank fields.</p>
+  <p><b>Missed (not in WEBINARS):</b> "Deal Detective with Pace Morby" (Oct 1) and "Cash Flow with Co-Living" (recurring Oct 9–13). See <a href="#fix322a">the drafted fix</a>.</p>
+</div>
+
+<div class="callout">
+  <h3><span class="ico" aria-hidden="true">ℹ</span>3 · Downstream workflows idle</h3>
+  <p>322b, 323b and 323c have had 0 runs in 7 days. They depend on issues 1 and 2 and should resume once those are fixed.</p>
+</div>
+
+<h2>Next steps (this week)</h2>
+<p class="dim">Each step changes a production workflow, so each one needs Matt's approval.</p>
+<ol class="steps">
+  <li><b>Make 232b survive surges</b><span>✓ AC webhooks confirmed active (Sep 28), so no re-registering is needed. Apply the <a href="#surge">232b surge fixes</a> so the next surge doesn't cause failures.</span></li>
+  <li><b>Fix and republish 323a</b><span>Confirm the Sep 24 save with Matt, apply the <a href="#fix323a">pre-publish fixes</a>, publish, and fill the WEBINARS gaps so registrants match.</span></li>
+  <li><b>Fix 322a and backfill the 2 missed webinars</b><span>Apply the <a href="#fix322a">322a fix</a>, re-validate the endpoint in the Zoom Marketplace app, then add the 2 missed webinars with <code>322c. Zoom Webinar Backfill (form)</code>.</span></li>
+  <li><b>Run a live webinar in n8n and Zapier together</b><span>Compare registrant counts between n8n and Zapier.</span></li>
+  <li><b>Switch over</b><span>For each webinar, turn on its WEBINARS row flags in the <a href="#fix323a">staged order</a>, then pause that webinar's zap. (REG_CUTOVER isn't wired to anything, so it isn't the switch.)</span></li>
+</ol>
+
+<h2 id="fix322a">Fixing 322a (draft)</h2>
+<p class="dim">Keep the 5-minute wait and the Pulse dedupe. Just move them after the reply to Zoom. No node renames. Not applied; needs Matt's approval.</p>
+
+<div class="fix">
+  <h3>New order</h3>
+  <div class="flow">
+    <span class="node">webhook</span><span class="arrow">→</span>
+    <span class="node">zoom_validation</span><span class="arrow">→</span>
+    <span class="node">validation ping: generate_token → validate_webhook (instant reply)</span>
+  </div>
+  <div class="flow">
+    <span class="node">real event: webhook_response "OK" (instant)</span><span class="arrow">→</span>
+    <span class="node">wait_5m</span><span class="arrow">→</span>
+    <span class="node">map_check → map_lookup_status → map_skip</span><span class="arrow">→</span>
+    <span class="node">skip mint?</span><span class="arrow">→</span>
+    <span class="node">no: clean → upsert → … (unchanged)</span>
+  </div>
+  <p class="dim">If <code>skip mint?</code> says yes (Pulse already created the webinar), the run ends at a new <code>execution_data (pulse skip)</code> node that records the webinar name, id and operator email.</p>
+</div>
+
+<div class="fix">
+  <h3>The changes</h3>
+  <details><summary>1 · Rewire (connections only)</summary>
+<pre><code>remove  webhook          → wait_5m
+add     webhook          → zoom_validation
+remove  webhook_response → clean
+add     webhook_response → wait_5m
+remove  skip mint? [false] → zoom_validation
+add     skip mint? [false] → clean
+add     skip mint? [true]  → execution_data (pulse skip)   (new node)</code></pre>
+  </details>
+  <details><summary>2 · map_skip: carry the original Zoom payload through the wait</summary>
+<pre><code>const rows = $input.all().map(i =&gt; i.json).filter(r =&gt; r &amp;&amp; r.status);
+const hit = rows.length &gt; 0;
+return [{ json: {
+  ...$('webhook').first().json,   // body.payload.object.* for clean
+  skip_mint: hit,
+  map_status: hit ? rows[0].status : null,
+  webinar_id: $('map_check').first().json.webinar_id,
+} }];</code></pre>
+  <p class="dim"><code>clean</code> keeps reading <code>$json.body.payload.object.*</code> unchanged.</p>
+  </details>
+  <details><summary>3 · skip mint?: use a condition format the node actually reads</summary>
+<pre><code>Replace the node in place (same name, same position) with IF typeVersion 2.2,
+matching zoom_validation:
+
+{ "conditions": {
+    "options": { "caseSensitive": true, "leftValue": "",
+                 "typeValidation": "strict", "version": 2 },
+    "conditions": [{
+      "leftValue": "={{ $json.skip_mint }}", "rightValue": "",
+      "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+    }],
+    "combinator": "and" },
+  "options": {} }
+
+checked with n8n's validator: proposed = valid;
+today = invalid ("conditions.conditions is missing"), so the node treats the check as passed:
+{ "conditions": { "boolean": [{ "value1": "={{ $json.skip_mint }}", "operation": "isTrue" }] } }</code></pre>
+  </details>
+  <details><summary>4 · Test before publishing, then roll out</summary>
+<pre><code>a. validate_node_config on skip mint? and map_skip, then validate_workflow
+b. test run with pinned data:
+     endpoint.url_validation → replies instantly with plainToken + encryptedToken
+     webinar.created (Pulse-made, id in pulse_event_map) → ends at pulse skip
+     webinar.created (web_portal, e.g. Deal Detective)       → reaches clean with real fields
+c. publish → Zoom Marketplace app → Event Subscriptions → re-validate the endpoint
+d. backfill with 322c: Deal Detective (10/1) and Co-Living (10/9–13)
+rollback: restore the current published version</code></pre>
+  </details>
+</div>
+
+<h2 id="fix323a">Fixing 323a · Webinar Registration Hub (draft)</h2>
+<p class="dim">Not applied; needs Matt's approval.</p>
+
+<div class="callout">
+  <h3><span class="ico" aria-hidden="true">ℹ</span>How the hub decides what to do</h3>
+  <div class="flow">
+    <span class="node">232b: AC "… Registrant" tag</span><span class="arrow">→</span>
+    <span class="node">find webinar by ac_tag</span><span class="arrow">→</span>
+    <span class="node">claim (dedupe)</span><span class="arrow">→</span>
+    <span class="node">phone verify</span><span class="arrow">→</span>
+    <span class="node">gated writes</span>
+  </div>
+  <p>Each write only runs if <b>both</b> the global switch in SETTINGS <b>and</b> that webinar's own flag in WEBINARS are true:</p>
+  <table>
+    <tr><th>Global (SETTINGS)</th><th>Webinar flag</th><th>Turns on</th></tr>
+    <tr><td>ZOOM_ADD ✓</td><td><code>reg_platform</code></td><td>Register in Zoom and add the join link</td></tr>
+    <tr><td>CRM_WRITES ✓</td><td><code>crm_writes</code></td><td>Close upsert, round robin, source, custom activity, Impact, AC email tag</td></tr>
+    <tr><td>BRAND_LOG ✓</td><td><code>brand_log</code></td><td>Brand registration log and the "All Registrants" sheet</td></tr>
+    <tr><td>OUTBOUND_COMMS ✓</td><td><code>confirm_sms</code></td><td>Confirmation text</td></tr>
+  </table>
+  <p>All four global switches are on, but <b>every WEBINARS row I checked has these flags empty</b>. So once published, the hub only claims, phone-verifies and logs. That's shadow mode, and it's the per-webinar switch for this week. <code>REG_CUTOVER</code> and the WEBINARS <code>cutover</code> column aren't read by the hub.</p>
+</div>
+
+<div class="fix">
+  <h3>What's wrong</h3>
+  <p><b>✕ Unpublished since Sep 24.</b> Only one version exists in history, so there's nothing to compare against. A new workflow, <code>922h. NR Registry API</code>, was created a minute earlier, which suggests a related change made outside this workspace.</p>
+  <p><b>✕ Registrants don't match a webinar.</b> The hub looks webinars up by their AC tag. There's no WEBINARS row for "9/26/26 Gator Live Registrant", and 322a has dropped every new webinar since Sep 22. Those registrants go to <code>unmatched_registrations</code> and nothing else happens.</p>
+  <p><b>⚠ The SMS roster step isn't connected.</b> <code>append_registrant</code> (the "SMS Verified" tab the SMS reminders read) has nothing feeding it, so the hub never adds anyone to the reminder list. The registrant-count update that follows it (<code>zoom_count</code> → <code>update_reg_count</code>) never runs either. The workflow's own note says OUTBOUND_COMMS should feed it.</p>
+  <p><b>⚠ No error alerts.</b> 323a has no error workflow set, while 232b and 322a both use the shared error handler.</p>
+</div>
+
+<div class="fix">
+  <h3>The plan</h3>
+  <details><summary>1 · Confirm with Matt (before touching anything)</summary>
+<pre><code>- What was the Sep 24 4:37 PM save? Is it tied to 922h NR Registry API?
+- Was disconnecting append_registrant intentional (is Zapier or another flow
+  feeding the SMS Verified tab)?
+- Should the switch stay per-webinar row flags, with REG_CUTOVER left unused?</code></pre>
+  </details>
+  <details><summary>2 · Pre-publish edits (no renames)</summary>
+<pre><code>settings.errorWorkflow = shared-error-handler
+
+# only if Matt confirms the SMS roster should come from the hub:
+add     outbound_comms? [true] → append_registrant      (alongside confirm_sms?)
+remove  append_registrant      → append_all_registrants (already fed by
+                                  log_webinar_registration; avoids a double row)
+keep    append_registrant      → zoom_count → count_ok? → update_reg_count</code></pre>
+  </details>
+  <details><summary>3 · Test, then publish</summary>
+<pre><code>test_workflow with pinned "call" input (all row flags empty = shadow):
+  a. matched tag (e.g. "10/3/26 Gator Live Registrant") → claim → phone verify
+     → stamp_completed; no Close/AC/Zoom calls
+  b. same person again → duplicate_stop
+  c. unknown tag → log_unmatched_registration
+  (the existing hub end-to-end test script covers these paths)
+
+publish_workflow 323a
+rollback: unpublish_workflow 323a</code></pre>
+  </details>
+  <details><summary>4 · Fill the WEBINARS gaps</summary>
+<pre><code>-- which AC tags arrived with no webinar row (marketing database)
+SELECT tag, brand, count(*) AS registrants, min(created_at), max(created_at)
+FROM unmatched_registrations
+WHERE created_at &gt; now() - interval '21 days'
+GROUP BY tag, brand
+ORDER BY registrants DESC;</code></pre>
+  <p class="dim">Add each missing webinar with <code>322c. Zoom Webinar Backfill (form)</code>: the Sep 26 Gator webinar, plus the 2 that 322a dropped. Make sure the row's <code>ac_tag</code> exactly matches the AC tag.</p>
+  </details>
+  <details><summary>5 · Switch over one webinar at a time (staged order)</summary>
+<pre><code>On that webinar's WEBINARS row, one flag at a time, checking runs after each:
+  1. reg_platform = true   (Zoom add + join link)
+  2. crm_writes   = true   (Close, round robin, AC)
+  3. brand_log    = true   (brand log + All Registrants sheet)
+  4. confirm_sms  = true   (confirmation text)
+then pause that webinar's Zapier zap.
+Don't enable brand_log without crm_writes; log rows would have a blank lead/rep.
+rollback: set the flags back to empty</code></pre>
+  </details>
+</div>
+
+<h2 id="surge">Fixing 232b under lead surges (drafts)</h2>
+
+<div class="callout warn">
+  <h3><span class="ico" aria-hidden="true">⚠</span>Why it breaks</h3>
+  <p>The error comes from n8n's own internal database, not from a Postgres node in the workflow. Three things combine during a surge:</p>
+  <p><b>Tiny connection pool.</b> <code>DB_POSTGRESDB_POOL_SIZE</code> is never set, so each n8n container gets the default of <b>2</b> connections, while each worker runs up to <b>10</b> executions at once.</p>
+  <p><b>One lead becomes many saved runs.</b> 232b → ledger tap (923x) → 323a → about 11 sub-workflows. Each one writes a run record to the database.</p>
+  <p><b>Background load.</b> <code>235w. Write Bus Drain</code> runs <b>every 2 seconds</b>, about 43,000 runs a day, and each one uses the same database.</p>
+  <p>When connections run out, the webhook itself can fail. AC hasn't disabled the webhooks (confirmed active Sep 28), but repeated failures put that at risk. (n8n also returned a 502 "origin overloaded" once while this review was running.)</p>
+</div>
+
+<p class="dim">Nothing below has been applied. Each fix needs Matt's approval. Suggested order: A and B first (quick, lowest risk), then C, then D.</p>
+
+<div class="fix">
+  <h3>A · Raise n8n's database connection pool</h3>
+  <p class="meta">Infra · n8n container config → <code>local.n8n_env</code> · applies to main and workers</p>
+  <p>Biggest single improvement. The worst case is 11 containers × 10 = 110 connections. Confirm the database can take that before applying (see the pre-check).</p>
+  <details><summary>Show the change</summary>
+<pre><code># add to local.n8n_env (workers inherit it through worker_env)
+    # n8n's own DB pool. The default of 2 per process starved under AC lead
+    # surges on 9/25 ("timeout exceeded when trying to connect").
+    # 1 main + up to 10 workers x 10 = 110 connections max.
+    { name = "DB_POSTGRESDB_POOL_SIZE", value = "10" },
+    { name = "DB_POSTGRESDB_CONNECTION_TIMEOUT", value = "60000" },</code></pre>
+<pre><code># pre-check (n8n database): must comfortably exceed 110 + other clients
+SHOW max_connections;
+# CloudWatch: DatabaseConnections, CPUUtilization, CPUCreditBalance
+#             around 2026-09-25 11:56 AM Phoenix
+
+# apply ONLY the n8n tasks/services, never the whole directory
+terraform plan  -target=aws_ecs_task_definition.main -target=aws_ecs_task_definition.worker \
+                -target=aws_ecs_service.main -target=aws_ecs_service.worker
+terraform apply -target=... (same four targets)
+
+# rollback: remove the two lines and re-apply the same four targets</code></pre>
+  </details>
+  <p class="dim">If the database's CPU burst credits ran out on Sep 25, also move it from <code>db.t4g.small</code> to <code>db.t4g.medium</code>.</p>
+</div>
+
+<div class="fix">
+  <h3>B · Slow the write-bus drainer from every 2 seconds to every 30 seconds</h3>
+  <p class="meta">n8n · <code>235w. Write Bus Drain</code> · <code>every_2s</code> trigger</p>
+  <p>235w already keeps draining until the queue is empty within one run (up to 20 loops of 150 rows), so a 30-second schedule costs at most about 30 seconds of delay. It cuts about 43,000 runs a day to about 2,900.</p>
+  <details><summary>Show the change</summary>
+<pre><code>node every_2s → rule.interval: [{ field: "seconds", secondsInterval: 30 }]
+(keep the node name; only the interval changes)
+rollback: set secondsInterval back to 2</code></pre>
+  </details>
+</div>
+
+<div class="fix">
+  <h3>C · Stop spawning a sub-workflow per lead for the ledger</h3>
+  <p class="meta">n8n · <code>232b</code> · nodes <code>ledger (subto|zdb|gator|tc|sus)</code> → <code>923x. Execution Ledger Tap</code></p>
+  <p>Every lead starts an extra run just to log that it arrived. <code>execution_data</code> already records name, email, phone and ac_id on the same run. Disable the five ledger nodes, or replace them with a single direct Postgres insert into the ledger table. Either removes one saved run per lead.</p>
+  <details><summary>Show the change</summary>
+<pre><code>disable: ledger (subto), ledger (zdb), ledger (gator), ledger (tc), ledger (sus)
+(no renames; execution_data → universal_router path is untouched)
+rollback: re-enable the five nodes</code></pre>
+  </details>
+</div>
+
+<div class="fix">
+  <h3>D · Queue registrants instead of processing them live</h3>
+  <p class="meta">n8n · <code>232b</code> + new <code>323f. Registrant Queue Drain</code> (draft in HAILEY folder) · marketing database</p>
+  <p>This is the fix for surges we can't control. 232b only saves the registrant to a queue table and returns straight away. A drainer pulls <b>20 every 30 seconds</b> (about 2,400 an hour) and calls 323a one at a time. A surge makes the queue longer instead of causing failures, AC always gets a fast success reply, and every registrant has a row to audit.</p>
+  <div class="flow">
+    <span class="node">AC tag webhook</span><span class="arrow">→</span>
+    <span class="node">232b · insert row</span><span class="arrow">→</span>
+    <span class="node">registrant_queue</span><span class="arrow">→</span>
+    <span class="node">323f · 20 per 30 s</span><span class="arrow">→</span>
+    <span class="node">323a hub</span>
+  </div>
+  <p class="dim">It's a separate table because <code>235w</code> claims every row in <code>write_queue</code> regardless of action, so it would pick up registrant rows and mark them unknown.</p>
+  <details><summary>1 · New table</summary>
+<pre><code>CREATE TABLE IF NOT EXISTS registrant_queue (LIKE write_queue INCLUDING ALL);
+-- same columns, unique event_id, defaults. Note: shares write_queue's id sequence.</code></pre>
+  </details>
+  <details><summary>2 · 232b: replace "Register (222b, fire-and-forget)" with a Postgres insert</summary>
+<pre><code>-- node: enqueue_registrant  [postgres · executeQuery · marketing database]
+-- wired: Registrant tag? (true) → enqueue_registrant
+-- keep the old Execute node, disabled, for rollback
+WITH t AS (SELECT $1::jsonb AS j)
+INSERT INTO registrant_queue (event_id, platform, account, action, priority,
+  coalesce_key, request_cost, payload, status, attempts, last_error)
+SELECT
+  'reg|' || (j-&gt;&gt;'brand') || '|' || (j-&gt;&gt;'contact_id') || '|' || (j-&gt;&gt;'tag'),
+  'n8n', j-&gt;&gt;'brand', 'webinar_register', 'realtime',
+  'reg|' || (j-&gt;&gt;'brand'), 1, j, 'queued', 0, ''
+FROM t
+WHERE coalesce(j-&gt;&gt;'contact_id', '') &lt;&gt; ''
+ON CONFLICT (event_id) DO NOTHING
+RETURNING event_id;
+
+-- queryReplacement (same 14 fields 323a gets today):
+={{ JSON.stringify({ ac_id: $json.contact_id, contact_id: $json.contact_id,
+  email: $json.email, phone: $json.phone, fname: $json.first_name,
+  lname: $json.last_name, tag: $json.tag, brand: $json.brand,
+  utm_source: $json.utm_source, utm_medium: $json.utm_medium,
+  utm_campaign: $json.utm_campaign, utm_content: $json.utm_content,
+  utm_term: $json.utm_term, impact_click_id: $json.impact_click_id,
+  impact_partner_id: $json.impact_partner_id }) }}
+-- settings: retryOnFail true, maxTries 3, waitBetweenTries 2000</code></pre>
+  <p class="dim">The event id is built from brand, contact and tag, so if AC resends the same registration it's ignored (today's random id can't catch that).</p>
+  </details>
+  <details><summary>3 · New workflow 323f. Registrant Queue Drain</summary>
+<pre><code>every_30s [schedule]
+  → claim [postgres]
+  → Loop Over Items (batch 1)
+      → register [executeWorkflow 323a, waitForSubWorkflow: true,
+                  onError: continueErrorOutput]
+          ok  → mark_done  → execution_data (name, phone, email)
+          err → mark_retry → execution_data (name, phone, email)
+settings: executionTimeout 600, errorWorkflow shared-error-handler,
+          saveDataSuccessExecution none</code></pre>
+<pre><code>-- claim: 20 rows, skips if a batch is still in flight
+WITH inflight AS (
+  SELECT count(*) AS n FROM registrant_queue
+  WHERE status = 'working' AND updated_at &gt; now() - interval '2 minutes'
+), cand AS (
+  SELECT id FROM registrant_queue
+  WHERE attempts &lt; 5
+    AND (status = 'queued'
+         OR (status = 'working' AND updated_at &lt; now() - interval '10 minutes'))
+    AND (not_before IS NULL OR not_before &lt;= now())
+    AND (SELECT n FROM inflight) = 0
+  ORDER BY id
+  LIMIT 20
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE registrant_queue q SET status = 'working', updated_at = now()
+FROM cand WHERE q.id = cand.id
+RETURNING q.id, q.event_id, q.payload, q.attempts;
+
+-- mark_done
+UPDATE registrant_queue
+SET status = 'done', finished_at = now(), updated_at = now()
+WHERE id = $1;
+
+-- mark_retry: exponential backoff, gives up after 5 attempts
+UPDATE registrant_queue
+SET attempts   = attempts + 1,
+    status     = CASE WHEN attempts + 1 &gt;= 5 THEN 'failed' ELSE 'queued' END,
+    last_error = left($2, 500),
+    not_before = now() + (power(2, least(attempts + 1, 5)) || ' seconds')::interval,
+    updated_at = now()
+WHERE id = $1;</code></pre>
+  </details>
+  <p class="dim">Tuning: raise <code>LIMIT</code> or shorten the interval for faster throughput. A stuck row is retried after 10 minutes. Rollback: re-enable the old Register node in 232b and disable <code>enqueue_registrant</code>. Any queued rows can be drained later.</p>
+</div>
+
+<h2>Also noted (outside Zoom scope)</h2>
+<table>
+  <tr><th>Item</th><th>Issue</th></tr>
+  <tr><td><code>333a</code> WJ Registrant Poller</td><td>Every write fails because the "Append All Registrants" column setup is out of date. Missing columns: registered_at, fname, lname, join_url, lead_id, rep, sms_verified.</td></tr>
+  <tr><td><code>235d</code> Lead → Add Tag in AC</td><td>Intermittent 500 errors from the Gator AC account (Signed Up → student tag).</td></tr>
+  <tr><td><a href="overview.html#wave1" style="color:var(--accent)">Migration status page</a></td><td>Lists 343a AMA as "live poll", but that workflow is inactive.</td></tr>
+</table>
+
+</div>
+</body>
+</html>

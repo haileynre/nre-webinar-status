@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zapier → n8n — what’s live, what’s still Zapier</title>
+<script>
+  (function(){var t;try{t=localStorage.getItem('nre-theme')}catch(e){}
+    document.documentElement.setAttribute('data-theme',t||'light');})();
+  function nreToggleTheme(btn){
+    var r=document.documentElement,t=r.getAttribute('data-theme')==='light'?'dark':'light';
+    r.setAttribute('data-theme',t);try{localStorage.setItem('nre-theme',t)}catch(e){}
+    nreThemeLabel();
+  }
+  function nreThemeLabel(){
+    var b=document.getElementById('theme-btn');if(!b)return;
+    var light=document.documentElement.getAttribute('data-theme')==='light';
+    b.textContent=light?'☾ Dark mode':'☀ Light mode';
+    b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');
+  }
+  document.addEventListener('DOMContentLoaded',nreThemeLabel);
+</script>
+<style>
+  :root{
+    --bg: var(--theme-bg, #0d1117);
+    --panel: var(--theme-surface, #161b22);
+    --panel2: var(--theme-surface-alt, #1c2333);
+    --line: var(--theme-border, #30363d);
+    --ink: var(--theme-text, #e6edf3);
+    --dim: var(--theme-text-muted, #8b949e);
+    --accent: var(--theme-accent, #58a6ff);
+    --accent-dim: var(--theme-accent-dim, rgba(88,166,255,.12));
+    --ok: #56b4e9;
+    --warn: #e69f00;
+    --err: #ff8a5c;
+    --p-live-bg:#0d2a45; --p-live-fg:#8fcdf5; --p-live-bd:#1f5a8a;
+    --p-shadow-bg:#2a1a3a; --p-shadow-fg:#d8b0f2; --p-shadow-bd:#5a3a7a;
+    --p-built-bg:#332208; --p-built-fg:#f5b54a; --p-built-bd:#6b4a12;
+    --p-later-bg:#2a2a31; --p-later-fg:#c3c3cc; --p-later-bd:#45454f;
+    --p-bad-bg:#3a1a0c; --p-bad-fg:#ffa27a; --p-bad-bd:#7a3514;
+    --n-door-bg:#0f1c2a; --n-hub-bg:#1a1226; --n-stop-bg:#1f170a; --n-go-bg:#0f1c2a;
+    --shadow-btn: 0 4px 18px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --panel:#f6f8fa; --panel2:#eef1f5; --line:#c9d1d9;
+    --ink:#1f2328; --dim:#57606a; --accent:#0550ae; --accent-dim:rgba(5,80,174,.10);
+    --ok:#0072b2; --warn:#9a5b00; --err:#b83d00;
+    --p-live-bg:#e0efff; --p-live-fg:#0550ae; --p-live-bd:#9cc7f0;
+    --p-shadow-bg:#f3e8fb; --p-shadow-fg:#6f2da8; --p-shadow-bd:#d2b3ea;
+    --p-built-bg:#fff1db; --p-built-fg:#8a4b00; --p-built-bd:#f0c27a;
+    --p-later-bg:#eef0f3; --p-later-fg:#444c56; --p-later-bd:#c9ced6;
+    --p-bad-bg:#ffe8dc; --p-bad-fg:#a33a00; --p-bad-bd:#f2b08e;
+    --n-door-bg:#eaf3ff; --n-hub-bg:#f5eefc; --n-stop-bg:#fff5e6; --n-go-bg:#eaf3ff;
+    --shadow-btn: 0 2px 10px rgba(0,0,0,.12);
+    --font: var(--theme-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    --mono: var(--theme-font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+    --radius: var(--theme-radius, 10px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font)}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 22px 110px}
+  header{margin-bottom:28px}
+  h1{font-size:30px;letter-spacing:-.03em;line-height:1.15;margin:0 0 10px}
+  .lede{font-size:18px;color:var(--dim);max-width:42em;margin:0 0 8px}
+  .stamp{font:12px/1.4 var(--mono);color:var(--dim);opacity:.8}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);
+     margin:48px 0 14px;font-weight:700}
+  h3{font-size:18px;margin:22px 0 8px}
+  p,li{color:var(--ink)}
+  p.dim, .dim{color:var(--dim)}
+  a{color:var(--accent)}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);
+    border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .stat b{display:block;font-size:26px;letter-spacing:-.03em}
+  .stat span{display:block;font-size:12px;color:var(--dim);margin-top:4px}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:var(--radius);padding:14px 16px;margin:16px 0}
+  .callout.warn{border-left-color:var(--warn)}
+  .callout.ok{border-left-color:var(--ok)}
+  .grid8{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0}
+  .sys{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 14px 12px}
+  .sys h3{font-size:15px;margin:8px 0 6px}
+  .sys p{margin:0;font-size:13.5px;color:var(--dim)}
+  .pill{display:inline-block;font:700 11px/1.2 var(--mono);padding:3px 8px;border-radius:99px;
+    border:1px solid var(--line)}
+  .live{background:var(--p-live-bg);color:var(--p-live-fg);border-color:var(--p-live-bd)}
+  .shadow{background:var(--p-shadow-bg);color:var(--p-shadow-fg);border-color:var(--p-shadow-bd)}
+  .built{background:var(--p-built-bg);color:var(--p-built-fg);border-color:var(--p-built-bd)}
+  .later{background:var(--p-later-bg);color:var(--p-later-fg);border-color:var(--p-later-bd);border-style:dashed}
+  .zapier{background:var(--p-bad-bg);color:var(--p-bad-fg);border-color:var(--p-bad-bd)}
+  .pill.live::before{content:"✓ "}
+  .pill.shadow::before{content:"◐ "}
+  .pill.built::before{content:"◆ "}
+  .pill.later::before{content:"○ "}
+  .pill.zapier::before{content:"▲ "}
+  .callout.warn>strong:first-child::before{content:"⚠ ";color:var(--warn)}
+  .callout.ok>strong:first-child::before{content:"✓ ";color:var(--ok)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);
+     padding:0 10px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:16px 0}
+  .node{flex:1 1 120px;min-width:110px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:8px;padding:10px 11px;font-size:13px}
+  .node b{display:block;margin-bottom:3px}
+  .node small{display:block;color:var(--dim);font-size:12px}
+  .node.door{border-color:var(--p-live-bd);background:var(--n-door-bg)}
+  .node.hub{border-color:var(--p-shadow-bd);background:var(--n-hub-bg)}
+  .node.stop{border-color:var(--p-built-bd);background:var(--n-stop-bg);border-style:dashed}
+  .node.go{border-color:var(--ok);background:var(--n-go-bg);border-width:2px}
+  .node.stop b::before{content:"■ "}
+  .node.go b::before{content:"▶ "}
+  .arrow{align-self:center;color:var(--dim);font-size:18px;flex:0 0 auto}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  @media (max-width:760px){.ex{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:0}
+  .card h3{margin-top:0}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+  ul.tight li{margin:4px 0}
+  .toc{display:flex;flex-wrap:wrap;gap:8px 14px;margin:18px 0 6px;font-size:13.5px}
+  .toc a{text-decoration:none;border-bottom:1px dotted color-mix(in srgb, var(--accent) 50%, transparent)}
+  footer.sources a{display:block;margin:6px 0}
+  @media print{
+    body{background:#fff;color:#111}
+    .node,.sys,.stat,.card,.callout{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Zapier → n8n: what’s actually replaced</h1>
+  <p class="lede">Zapier is still the live owner of almost every lead and most webinar assignment. n8n has the replacement machines for webinars and lead routing. Built is not the same as cut over.</p>
+  <p class="stamp">snapshot 2026-09-08 evening · New Reach · volumes from the Jul 1–Sep 4 usage window plus the 2026-09-08 Zapier export</p>
+</header>
+
+<nav class="toc">
+  <a href="#tldr">The one-screen version</a>
+  <a href="#systems">Eight systems</a>
+  <a href="#routing">How lead routing works</a>
+  <a href="#wave2">Wave 2 vs Zapier</a>
+  <a href="#wave1">Webinars</a>
+  <a href="#rest">Still on Zapier</a>
+  <a href="#next">What’s next</a>
+</nav>
+
+<div class="stats">
+  <div class="stat"><b>4.23M</b><span>Zapier tasks / 90 days</span></div>
+  <div class="stat"><b>~78%</b><span>of that is webinars + lead routing</span></div>
+  <div class="stat"><b>0</b><span>lead-routing routes cut over</span></div>
+  <div class="stat"><b>69</b><span>lead-routing doors in the n8n table</span></div>
+  <div class="stat"><b>200</b><span>dead zaps approved to turn off, still on</span></div>
+</div>
+
+<div class="callout warn">
+  <strong>The confusion this page is for:</strong> seeing 423a, 432a, 232g, 424a in n8n
+  does not mean those Zapier zaps are gone. They are the <em>replacement</em>.
+  Zapier still fires on every hot app, ebook magnet, Typeform, and booking.
+  n8n will take over one door at a time after a shadow period, by flipping a
+  row in a table — not by rewriting a new workflow per campaign.
+</div>
+
+<h2 id="tldr">The one-screen version</h2>
+<div class="legend">
+  <span class="pill live">live in n8n</span>
+  <span class="pill shadow">n8n shadowing Zapier</span>
+  <span class="pill built">built, Zapier still owns it</span>
+  <span class="pill later">not built yet</span>
+</div>
+<table>
+  <tr><th>What people actually do</th><th>Who owns it today</th><th>n8n replacement</th></tr>
+  <tr>
+    <td>Fill a hot app / Fast Pass Typeform</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>Lead Routing hub (423a) + Typeform door (232g). Hub is on as a spoke; the door is off. 37 Typeform rows in the table.</td>
+  </tr>
+  <tr>
+    <td>Get an AC tag from an ebook / magnet</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>Same hub. 232b already receives the tag; the wire to 423a is built and <em>disconnected</em>.</td>
+  </tr>
+  <tr>
+    <td>Land on a list (Pace freebie, A–Z, Gator Affiliate)</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>Same hub. Subscribe still always enqueues the welcome email. List→423a is prebuilt, disconnected.</td>
+  </tr>
+  <tr>
+    <td>Book a call on OnceHub / ScheduleOnce</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>Same hub + 232i. Four calendar-name rows. Door off.</td>
+  </tr>
+  <tr>
+    <td>Get round-robin assigned in Close, Slack ping, tracker row</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>423a cutover lane. Probed with a fake lead: claim works; Close / round robin / Sheets / Slack do <em>not</em> run while the row says cutover=false.</td>
+  </tr>
+  <tr>
+    <td>After a sales call: change Close status / DNC tags</td>
+    <td><span class="pill zapier">Zapier</span> (and several say NEED TO UPDATE)</td>
+    <td>424a/b shells exist, empty mapping table. Waiting on sales-ops for status ids.</td>
+  </tr>
+  <tr>
+    <td>Register for a Zoom / Like-Live / AMA</td>
+    <td><span class="pill shadow">split</span></td>
+    <td>n8n already logs/claims in shadow. Zapier still writes AC + Close for live events. SMS reminders are n8n.</td>
+  </tr>
+  <tr>
+    <td>Welcome email when someone subscribes in AC</td>
+    <td><span class="pill live">n8n 232b</span></td>
+    <td>Already live. Separate from lead routing.</td>
+  </tr>
+  <tr>
+    <td>Stripe / PandaDoc / tickets / MSA / ads conversions</td>
+    <td><span class="pill zapier">Zapier</span></td>
+    <td>Not built. Waves 3–7.</td>
+  </tr>
+</table>
+
+<h2 id="systems">The eight systems (the whole migration)</h2>
+<p class="dim">The plan is not “rebuild every zap.” It is eight registry-driven systems plus a handful of small spokes. New campaigns become rows, not new workflows.</p>
+<div class="grid8">
+  <div class="sys">
+    <span class="pill shadow">wave 1 · shadowing</span>
+    <h3>1. Webinar funnels</h3>
+    <p>Registration, date-tags, SMS. New events = registry rows. SMS is live in n8n. Zoom/WJ/AMA claim + sheets run in parallel; Zapier still does the customer-facing AC/Close work until a per-event flip.</p>
+  </div>
+  <div class="sys">
+    <span class="pill built">wave 2 · built, not live</span>
+    <h3>2. Lead routing</h3>
+    <p>~1.05M tasks/90d of clones collapse into one hub + a 69-row table. This is the hot-app / SDR magnet / booking / Fast Pass pile. Explained below.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 3 · not started</span>
+    <h3>3. Conversion tracking</h3>
+    <p>Close/payment → PostHog, Google Ads, Hyros, Facebook. Planned as a Lambda, not n8n. ~200k tasks, 8 zaps we deliberately left out of Wave 2.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 4 · not started</span>
+    <h3>4. Purchase intake</h3>
+    <p>Stripe / ClickFunnels / WordPress → Close deal + AC + receipt. Money path. Shadow mandatory.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 4 · not started</span>
+    <h3>5. Contract lifecycle</h3>
+    <p>PandaDoc send-on-sale, signed-event fan-out, certificate PDFs. Includes Hailey KEEP auto-contract zaps.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 5 · not started</span>
+    <h3>6. Student / MSA</h3>
+    <p>Contract signed → trackers → welcome call → check-ins. ~37k tasks we pulled out of the lead-routing extract so they wouldn’t get eaten by accident.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 6 · not started</span>
+    <h3>7. Tickets</h3>
+    <p>Close tags → Slack / Monday. Includes the #it-help KEEP.</p>
+  </div>
+  <div class="sys">
+    <span class="pill later">wave 7 · last on purpose</span>
+    <h3>8. AR / payment reminders</h3>
+    <p>Delinquency stages, AR round robin, access revoke. Lowest volume, highest trust, so last.</p>
+  </div>
+</div>
+<p class="dim">Already live beside that plan: CYA (232b welcome + AC event router), phone verification (241c), Close/AC lead-ops spokes, and the webinar round-robin spoke (422a) that Wave 2 reuses rather than rebuilding.</p>
+
+<h2 id="routing">How lead routing actually works</h2>
+<p>Today, Zapier has a <em>clone per campaign</em>: “Subto Fast Pass Typeform,” “HNWI opt-in,” “A–Z ebook,” “ZDB organic Typeform,” each doing the same job with slightly different tags and sheets. The n8n version is one pipeline with a lookup table.</p>
+
+<h3>The table is the product</h3>
+<p>LEAD_ROUTES is a 69-row n8n data table. Each row is a <strong>door</strong>:</p>
+<ul class="tight">
+  <li><strong>what showed up</strong> — a Typeform id, an AC tag name, a list name, a webhook key, or a OnceHub calendar name</li>
+  <li><strong>who it belongs to</strong> — brand (Subto / Gator / ZDB / TTTC) and pool (DOE or SDR)</li>
+  <li><strong>what to do on cutover</strong> — AC tags to add, Slack channel, tracker sheet, whether to score the answers</li>
+  <li><strong>the switch</strong> — <code>cutover</code>. Every live row is <code>false</code>. False means “remember we saw this, do not assign.” True means n8n does Close + round robin + Slack + the sheet, and that Zapier zap must be paused in the same minute.</li>
+</ul>
+<p class="dim">69 rows today: 37 Typeform, 23 AC tags, 3 lists, 2 high-volume Subto webhooks, 4 OnceHub calendars. Zero cutover=true. 26 of them use the Hot App score model.</p>
+
+<h3>What happens to one lead</h3>
+<div class="flow">
+  <div class="node door"><b>1. A door fires</b><small>Typeform, webhook, AC tag/list, or booking. 232g/h/i or 232b.</small></div>
+  <span class="arrow">→</span>
+  <div class="node hub"><b>2. Hub looks up the row</b><small>423a matches route_id, or kind + source_id (case-insensitive).</small></div>
+  <span class="arrow">→</span>
+  <div class="node hub"><b>3. Score (sometimes)</b><small>432a, only if the row says hot_app_ls. Two lookup tables are empty on purpose — Zapier itself falls back to 0.</small></div>
+  <span class="arrow">→</span>
+  <div class="node hub"><b>4. Claim</b><small>Postgres insert. Same person, same door, twice → second run stops. This still happens in shadow, so a later flip cannot double-write Close.</small></div>
+  <span class="arrow">→</span>
+  <div class="node hub"><b>5. Phone check</b><small>241c. Foreign / landline / VoIP can stop before Close if the row says so.</small></div>
+</div>
+<div class="flow">
+  <div class="node stop"><b>Shadow (now)</b><small>cutover=false. Stop here. Zapier still creates the Close lead, assigns the DOE/SDR, writes the sheet, pings Slack.</small></div>
+  <span class="arrow">or</span>
+  <div class="node go"><b>Cutover (later, per row)</b><small>234d upsert in Close → 422a picks the next DOE/SDR → AC find/create/tag → positional tracker append → Slack. Empty sheet or channel is skipped, not failed.</small></div>
+</div>
+
+<div class="ex">
+  <div class="card">
+    <h3>Example A — ZDB organic Typeform</h3>
+    <p>Someone finishes form <code>GtJHQFU4</code>. Zapier still takes them to Close, round-robins a DOE, pings Slack, writes the tracker (~21k tasks/90d).</p>
+    <p>n8n already has that row. 232g would reshape the Typeform payload and call 423a. 232g is off, so nothing live hits the hub. A fake lead through 423a on this exact row claimed, skipped Close, and rejected the duplicate. That is shadow, working.</p>
+  </div>
+  <div class="card">
+    <h3>Example B — HNWI ebook tag</h3>
+    <p>AC adds tag <code>HNWI opt-in</code>. 232b already sees every Subto tag. Zapier’s SDR zap still round-robins (~63k tasks/90d).</p>
+    <p>n8n has the row. The “known magnet tag? → 423a” path is sitting on 232b, <em>disabled</em>. Flipping that flag is a 232b save (~2 min AC webhook drop) and would shadow every matching magnet at once. Decision #309 is which door to open first.</p>
+  </div>
+</div>
+
+<h3>Why 422a is not “the lead routing system”</h3>
+<p>422a is the <strong>picker</strong>: given a Close lead and DOE vs SDR, who is next. The webinar hub already uses it. Wave 2 does not rebuild it. The new work is everything <em>around</em> the picker: which door, which brand, whether to score, claiming, phone check, and the cutover writes. Calling 422a with a real lead during shadow would assign someone — that’s why it is behind the switch.</p>
+
+<h3>After the call (dispositions)</h3>
+<p>Separate system, same wave: when a DOE logs a completed / not-completed custom activity in Close, Zapier currently changes status and slaps DNC / Wrong Avatar tags. 424a/b are inactive drafts. The mapping table is empty because the Zapier clones still say NEED TO UPDATE on Close status ids. We are not inventing those.</p>
+
+<h2 id="wave2">Wave 2 — built vs still Zapier</h2>
+<p>The extract found ~274 zaps in this neighborhood (~1.09M tasks/90d). After kicking out webinar RR, conversion relays, and MSA, the proposed rebuild was 121 routes. We filled 69. The rest were blocked (missing tag names, other brands, ClickFunnels, Facebook leads) or were duplicates of rows already in.</p>
+
+<h3>Highest-volume zaps still running in Zapier</h3>
+<p class="dim">These are the ones that move the bill. n8n has a matching row unless noted.</p>
+<table>
+  <tr><th class="num">90d tasks</th><th>Zapier zap (still on)</th><th>n8n door</th></tr>
+  <tr><td class="num">593,848</td><td>Subto Performance Affiliate Hot Application</td><td>webhook row. 232h off.</td></tr>
+  <tr><td class="num">101,177</td><td>Subto Advocate Hot Application</td><td>webhook row. 232h off.</td></tr>
+  <tr><td class="num">62,942</td><td>SDR · Pace eBook HNWI</td><td>AC tag <code>HNWI opt-in</code>. 232b wire disconnected.</td></tr>
+  <tr><td class="num">62,393</td><td>SDR · A–Z eBook download</td><td>AC tag <code>SubTo A-Z Ebook Cold PAID</code>. disconnected.</td></tr>
+  <tr><td class="num">53,547</td><td>SDR · Pace freebie list</td><td>list <code>Pace freebie downloads</code> (id 61). disconnected.</td></tr>
+  <tr><td class="num">35,142</td><td>Subto Sales Activity Not Completed</td><td>424b. empty map. not Wave 2 intake.</td></tr>
+  <tr><td class="num">24,786</td><td>Subto Sales Activity Completed</td><td>424a. empty map.</td></tr>
+  <tr><td class="num">23,404</td><td>TTTC High Ticket Retargeting Typeform</td><td>Typeform <code>Fv69OaDf</code>. 232g off.</td></tr>
+  <tr><td class="num">21,313</td><td>ZDB organic Typeform</td><td>Typeform <code>GtJHQFU4</code>. 232g off. probe used this row.</td></tr>
+  <tr><td class="num">12,530</td><td>TTTC 2025 Funnel (Hailey KEEP)</td><td>Typeform <code>ZmkA20Pz</code>. 232g off.</td></tr>
+</table>
+
+<h3>Covered in the table, still Zapier because the doors are off</h3>
+<ul class="tight">
+  <li>The ~40 zero-task Typeform clones (Fast Pass copies, etc.). They are rows. They do not need their own workflows.</li>
+  <li>23 magnet tags + 3 lists. 232b already hears AC; we have not connected the wire.</li>
+  <li>4 OnceHub calendars, matched by calendar <em>name</em> (Pace Approves, Wix Funnel, No rescheduling, Seller Spells).</li>
+</ul>
+
+<h3>Still Zapier, not in the 69 rows</h3>
+<ul class="tight">
+  <li>Several high-volume SDR zaps whose export had <strong>no tag name</strong> (~14k + 13k + 13k + 11k). Need the tag from the Zapier UI or the magnet sheet before they can be a row.</li>
+  <li>ClickFunnels, Facebook Lead Ads, Kajabi, PM/SUS/SquadUp brands, AR-from-Close “15 day lead” zaps — later wave or a later fill, not this hub.</li>
+  <li>Number Validator zap (~15k). 241c already does the job inside intake; that zap can die when its callers die.</li>
+  <li>The Zapier Round Robin Sub Zap and Hot App Lead Score Sub Zap. Replaced by 422a and 432a. They stay on until every parent zap is paused.</li>
+</ul>
+
+<h2 id="wave1">Wave 1 — webinars (the other 54%)</h2>
+<p>This wave is absorption, not a new product. Per-event Zapier zaps become rows on the existing webinar registry. SMS v3 is already the live sender.</p>
+<table>
+  <tr><th>Sub-pattern</th><th>n8n</th><th>Zapier</th></tr>
+  <tr><td>SMS reminders</td><td><span class="pill live">live</span> 324a/b</td><td>zaps can be disabled at cutover; n8n already sends</td></tr>
+  <tr><td>Zoom direct → AC tag</td><td><span class="pill shadow">shadow</span> webhook 323e live; hourly poller on standby</td><td>per-event zaps still tag AC for live funnels</td></tr>
+  <tr><td>Round-robin webinar registration</td><td><span class="pill shadow">hub 323a + 422a</span> modes off / rows in shadow</td><td>per-event zaps still assign. BiB stays on Zapier until Jason says otherwise.</td></tr>
+  <tr><td>Like-Live (WebinarJam)</td><td><span class="pill shadow">332a/333a running</span></td><td>registration zaps still on</td></tr>
+  <tr><td>AMA intake</td><td><span class="pill shadow">343a live poll</span></td><td>Zapier AMA zaps still on</td></tr>
+  <tr><td>Google Calendar invite append</td><td><span class="pill built">235g parked</span></td><td>still in the RR-registration zaps. Calendar access is yours to sort.</td></tr>
+</table>
+<div class="callout ok">
+  Shadow here means: n8n already claims the registrant and writes the per-event Registrants sheet (and warms phone verify). It does <em>not</em> tag AC or create the Close lead until that webinar row’s cutover flag flips. Same lever as lead routing, different table (WEBINARS, not LEAD_ROUTES).
+</div>
+
+<h2 id="rest">Everything else still on Zapier</h2>
+<table>
+  <tr><th>Wave</th><th>What</th><th>Status</th></tr>
+  <tr>
+    <td>0</td>
+    <td>200 dead-brand / never-ran zaps Hailey approved to turn off. 8 KEEP (TTTC 2025 Funnel, TTTC Like-Live paid, Gator DOE tracker, Gator WP DTC, reschedule booking, #it-help, SquadUp finance, TTTC auto-contract).</td>
+    <td>Human Zapier-UI job with Jason/Hailey. No API. Not done.</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Conversion relays (~200k): PostHog, Google Ads offline, Hyros, FB CAPI, “Attended Call DOE | PostHog” style zaps.</td>
+    <td>Not built. Intentionally excluded from the lead-routing extract.</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Stripe / CF / WP purchases, PandaDoc send + signed, certificate PDFs.</td>
+    <td>Not built. Money path.</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>MSA trackers, welcome-call, onboarding state machines (~37k we split out of Wave 2).</td>
+    <td>Not built.</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Support/finance tickets, Monday, Slack utilities, IT provisioning.</td>
+    <td>Not built.</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>AR reminders, access revoke.</td>
+    <td>Not built. Last on purpose.</td>
+  </tr>
+  <tr>
+    <td>longtail</td>
+    <td>~268 active one-offs, copies, TEMP/TEST, brand experiments.</td>
+    <td>Triage as neighboring waves land. Expect roughly a third to just turn off.</td>
+  </tr>
+</table>
+
+<h2 id="next">What’s next (and what isn’t)</h2>
+<ol>
+  <li><strong>Open a live shadow door for lead routing</strong> without pausing Zapier. Decision #309: extra Typeform webhook on ZDB organic (smallest blast radius), or connect 232b magnet tags (more volume, 2 min AC drop), or wait.</li>
+  <li><strong>Watch claims for 48h</strong> against Zapier task counts. Mismatch → stop.</li>
+  <li><strong>Per-route cutover</strong>, lowest volume first (ZDB organic, then TTTC KEEP). Flip the row and pause that zap in the same window. Rollback = flip the row back — but only if Zapier is still on, so write the runbook before the first true flip.</li>
+  <li><strong>Dispositions</strong> after sales-ops fills Close status ids.</li>
+  <li><strong>Wave 0 off-switch</strong> in the Zapier UI (200 zaps).</li>
+  <li><strong>Wave 1 per-event flips</strong> when Jason is ready (BiB last).</li>
+</ol>
+<div class="callout">
+  <strong>Will not happen until you say so:</strong> pause any live Zapier zap, set a LEAD_ROUTES row to cutover=true, connect 232b’s magnet path, or activate 232g/h/i. 423a being “on” only means other workflows <em>can</em> call it. Nothing inbound does.
+</div>
+
+<h2>Glossary</h2>
+<table>
+  <tr><th>Word</th><th>Meaning here</th></tr>
+  <tr><td>Hub</td><td>One n8n workflow that does the job. Callers are thin.</td></tr>
+  <tr><td>Spoke</td><td>A sub-workflow with no public webhook (score, round robin, phone check, Close upsert). Must be active or n8n refuses to run it.</td></tr>
+  <tr><td>Door / adapter</td><td>The thin workflow that catches Typeform / webhook / OnceHub / AC and calls the hub.</td></tr>
+  <tr><td>Shadow</td><td>n8n runs in parallel with Zapier, records the event, does not assign.</td></tr>
+  <tr><td>Cutover</td><td>n8n assigns; that Zapier zap is paused.</td></tr>
+  <tr><td>DOE / SDR</td><td>The two round-robin pools. 422a only has these today (no Mastermind / Spanish pools unless a row needs them).</td></tr>
+  <tr><td>Hot app</td><td>The long Typeform application. Scored, then DOE round robin.</td></tr>
+  <tr><td>Magnet</td><td>Ebook / list / tag opt-in, usually SDR.</td></tr>
+</table>
+
+<footer class="sources"><h2>Sources</h2><p class="dim">Internal migration plan, system map and live n8n measurements (not public).</p></footer>
+
+</div>
+<style id="page-btns-style">
+  #page-btns{position:fixed;top:16px;right:16px;z-index:2147483000;display:flex;gap:8px}
+  #page-btns button{padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line,#26262c);background:var(--panel,#131316);
+    color:var(--ink,#e8e8ea);font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    box-shadow:var(--shadow-btn)}
+  #page-btns button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #page-btns button:hover{border-color:var(--accent,#7aa2f7);color:var(--accent,#7aa2f7)}
+  @media print{
+    #page-btns,#__jarvis_edit_bar__{display:none!important}
+    :root{--bg:#fff;--panel:#f5f5f7;--panel2:#ededf0;--line:#c9c9d2;
+      --ink:#111;--dim:#3d3d46;--faint:#6a6a73}
+    html,body{background:#fff!important;color:#111!important}
+    @page{margin:14mm}
+  }
+</style>
+<div id="page-btns">
+  <button type="button" id="theme-btn" onclick="nreToggleTheme()">☾ Dark mode</button>
+  <button type="button" title="Save a fully working copy of this page — interactive elements keep functioning offline"
+    onclick="(function(){const b=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});const a=document.createElement('a');a.href=window.URL.createObjectURL(b);a.download='overview.html';a.click();})()">Download HTML</button>
+  <button type="button" title="Opens the print dialog — choose 'Save as PDF'"
+    onclick="window.print()">Download PDF</button>
+</div>
+</body>
+</html>
