@@ -105,6 +105,10 @@
   .stat b.s-err{color:var(--err)} .stat b.s-warn{color:var(--warn)} .stat b.s-ok{color:var(--ok)}
   .callout h3 .ico{display:inline-block;width:1.3em}
   .callout.err h3 .ico{color:var(--err)} .callout.warn h3 .ico{color:var(--warn)} .callout h3 .ico{color:var(--accent)}
+  .callout.ok h3 .ico{color:var(--ok)}
+  .resolution{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:var(--s3) var(--s4);margin:0 0 var(--s4)}
+  .resolution p{margin:0 0 var(--s2)} .resolution p:last-child{margin-bottom:0}
+  ol.steps li.done b{color:var(--ok)}
 
   table{width:100%;border-collapse:collapse;margin:var(--s3) 0 var(--s4);font-size:.94rem;line-height:1.5;font-variant-numeric:tabular-nums}
   th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:0 var(--s3) var(--s2);border-bottom:2px solid var(--line)}
@@ -151,7 +155,8 @@
 <header id="top">
   <h1>Zoom webinar automation — findings &amp; next steps</h1>
   <p class="lede">Zoom webinar → registrants → ActiveCampaign + Close, in n8n. The registration path has been down since Sep 24. Zapier covered every registrant, so nothing was lost. Goal: full switch from Zapier to n8n this week.</p>
-  <div class="stamp">Hailey · 2026-09-28 · read-only review, nothing changed · <a href="test-2026-09-29.html">Sep 29 live test results →</a> · <a href="overview.html">full migration status page →</a></div>
+  <p class="lede"><b>Update Sep 29:</b> issue 2 is resolved. 322a is adding new Zoom webinars again, confirmed with a real webinar. Webinars created before Sep 29 won't be backfilled.</p>
+  <div class="stamp">Hailey · 2026-09-28 · updated 2026-09-29 · <a href="test-2026-09-29.html">Sep 29 live test results →</a> · <a href="overview.html">full migration status page →</a></div>
 </header>
 
 <nav class="toc" aria-labelledby="toc-label">
@@ -161,11 +166,11 @@
     <li><a href="#issues">Issues</a>
       <ol>
         <li><a href="#issue-1">1 · Registration path stopped Sep 24 (critical)</a></li>
-        <li><a href="#issue-2">2 · 322a has dropped every new Zoom webinar since Sep 22</a></li>
+        <li><a href="#issue-2">2 · ✓ Resolved: 322a dropped new Zoom webinars (Sep 22–29)</a></li>
         <li><a href="#issue-3">3 · Downstream workflows idle</a></li>
       </ol></li>
     <li><a href="#next">Next steps (this week)</a></li>
-    <li><a href="#fix322a">Fixing 322a (draft)</a></li>
+    <li><a href="#fix322a">Fixing 322a (applied Sep 29)</a></li>
     <li><a href="#fix323a">Fixing 323a · Webinar Registration Hub (draft)</a></li>
     <li><a href="#surge">Fixing 232b under lead surges (drafts)</a>
       <ol>
@@ -181,14 +186,14 @@
 <div class="stats">
   <div class="stat"><b class="s-err">✕ Down</b><span>Registration hub (323a) since Sep 24, 4:37 PM</span></div>
   <div class="stat"><b class="s-warn">⚠ Shadow</b><span>Hub (323a) is shadow-only for every webinar: per-webinar flags are empty</span></div>
-  <div class="stat"><b class="s-err">✕ 2 missed</b><span>Real Zoom webinars dropped by 322a since Sep 22</span></div>
+  <div class="stat"><b class="s-ok">✓ 322a fixed</b><span>New webinars reach WEBINARS again (Sep 29). The 2 missed earlier won't be backfilled.</span></div>
   <div class="stat"><b class="s-ok">✓ 0 lost</b><span>Zapier handled all registrants</span></div>
 </div>
 
 <h2 id="inventory">What's in n8n today</h2>
 <table>
   <tr><th>Workflow</th><th>State</th><th>Last 7 days</th></tr>
-  <tr><td><code>322a</code> New Zoom Webinar Created</td><td><span class="pill live">active</span></td><td>2 "ok" (both did nothing) · 3 error</td></tr>
+  <tr><td><code>322a</code> New Zoom Webinar Created</td><td><span class="pill live">active · fixed Sep 29</span></td><td>Before the fix: 2 "ok" (both did nothing) · 3 error. Since the fix: first real webinar added Sep 29, 12:49 PM</td></tr>
   <tr><td><code>322d</code> Upsert Webinar</td><td><span class="pill live">active</span></td><td>2,000+ ok · none since Sep 24</td></tr>
   <tr><td><code>322b</code> Webinar Scheduler</td><td><span class="pill live">active</span></td><td>0 runs</td></tr>
   <tr><td><code>323a</code> Webinar Registration Hub</td><td><span class="pill down">inactive · unpublished</span></td><td>2,000+ ok · none since Sep 24</td></tr>
@@ -215,39 +220,46 @@
   <p><b>✓ Ruled out (Sep 28):</b> the ActiveCampaign webhooks are confirmed active, so AC did not switch them off. With the webhooks live, 323a having no runs since Sep 24 points to 323a itself being unpublished.</p>
 </div>
 
-<div class="callout err">
-  <h3 id="issue-2"><span class="ico" aria-hidden="true">✕</span>2 · 322a has dropped every new Zoom webinar since Sep 22</h3>
-  <div class="flow">
-    <span class="node">Zoom webhook</span><span class="arrow">→</span>
-    <span class="node bad">wait 5 min (before replying)</span><span class="arrow">→</span>
-    <span class="node">Pulse dedupe lookup</span><span class="arrow">→</span>
-    <span class="node bad">skip mint? · always "skip"</span><span class="arrow">→</span>
-    <span class="node">(nothing)</span>
+<div class="callout ok">
+  <h3 id="issue-2"><span class="ico" aria-hidden="true">✓</span>2 · Resolved Sep 29: 322a dropped every new Zoom webinar (Sep 22–29)</h3>
+  <div class="resolution">
+    <p><b>Resolution (applied and published Sep 29):</b></p>
+    <div class="flow">
+      <span class="node">Zoom webhook</span><span class="arrow">→</span>
+      <span class="node">reply to Zoom immediately</span><span class="arrow">→</span>
+      <span class="node">wait 5 min</span><span class="arrow">→</span>
+      <span class="node">Pulse dedupe lookup</span><span class="arrow">→</span>
+      <span class="node">skip mint? · reads its check correctly</span><span class="arrow">→</span>
+      <span class="node">add to WEBINARS</span>
+    </div>
+    <p>Zoom now gets its reply first. The validation ping gets its token back in about 0.3 seconds. <code>skip mint?</code> was rewritten in a condition format the IF node reads. <code>map_skip</code> now carries the original Zoom data through the wait. Webinars Pulse already made end at a new <code>execution_data_pulse_skip</code> step that records the webinar and operator. Details are in <a href="#fix322a">Fixing 322a</a>.</p>
+    <p><b>Verified:</b> pinned tests passed for all three cases (Pulse-made, web portal, validation ping), with no writes. Then a real webinar created at 12:49 PM, "Business Buying with Pace Morby" (Oct 6), was added to WEBINARS with brand Subto, marked active, got its registrant sheet, and triggered the "needs SMS copy" nag.</p>
+    <p><b>Decision:</b> webinars created before Sep 29 won't be backfilled.</p>
   </div>
-  <p>A Pulse dedupe was added on Sep 22. It's meant to skip webinars Pulse already created, and it introduced three bugs:</p>
+  <p class="dim">What was wrong: a Pulse dedupe added on Sep 22 to skip webinars Pulse already created introduced three bugs:</p>
   <p><b>The check always says "skip".</b> <code>skip mint?</code> uses a condition format this version of the IF node doesn't read, so every webinar goes down the "skip" branch, which leads nowhere. Runs still show as "success".</p>
   <p><b>Zoom gets no reply for 5 minutes.</b> Zoom expects a reply within 3 seconds. Its URL-validation ping fails, which can make Zoom disable the webhook.</p>
   <p><b>The original Zoom data is lost after the wait.</b> Even if the check passed, the next step would read blank fields.</p>
-  <p><b>Missed (not in WEBINARS):</b> "Deal Detective with Pace Morby" (Oct 1) and "Cash Flow with Co-Living" (recurring Oct 9–13). See <a href="#fix322a">the drafted fix</a>.</p>
+  <p><b>Missed while broken:</b> "Deal Detective with Pace Morby" (Oct 1) and "Cash Flow with Co-Living" (recurring Oct 9–13). They won't be backfilled, per the Sep 29 decision.</p>
 </div>
 
 <div class="callout">
   <h3 id="issue-3"><span class="ico" aria-hidden="true">ℹ</span>3 · Downstream workflows idle</h3>
-  <p>322b, 323b and 323c have had 0 runs in 7 days. They depend on issues 1 and 2 and should resume once those are fixed.</p>
+  <p>322b, 323b and 323c have had 0 runs in 7 days. They depend on issues 1 and 2. Issue 2 is fixed, so they're now waiting only on issue 1 (323a).</p>
 </div>
 
 <h2 id="next">Next steps (this week)</h2>
 <p class="dim">Each step changes a production workflow, so each one needs Matt's approval.</p>
 <ol class="steps">
   <li><b>Make 232b survive surges</b><span>✓ AC webhooks confirmed active (Sep 28), so no re-registering is needed. Apply the <a href="#surge">232b surge fixes</a> so the next surge doesn't cause failures.</span></li>
-  <li><b>Fix and republish 323a</b><span>Confirm the Sep 24 save with Matt, apply the <a href="#fix323a">pre-publish fixes</a>, publish, and fill the WEBINARS gaps so registrants match.</span></li>
-  <li><b>Fix 322a and backfill the 2 missed webinars</b><span>Apply the <a href="#fix322a">322a fix</a>, re-validate the endpoint in the Zoom Marketplace app, then add the 2 missed webinars with <code>322c. Zoom Webinar Backfill (form)</code>.</span></li>
+  <li><b>Fix and republish 323a</b><span>Confirm the Sep 24 save with Matt, apply the <a href="#fix323a">pre-publish fixes</a>, and publish. Webinars created before Sep 29 won't be backfilled. New WEBINARS rows from 322a have an empty <code>ac_tag</code>, and the hub matches registrants on that field, so decide who fills it in.</span></li>
+  <li class="done"><b>✓ Done Sep 29 · Fix 322a</b><span>Fix applied and published, then verified with a real webinar. See <a href="#issue-2">issue 2</a>. The 2 webinars missed before the fix won't be backfilled. Zoom is delivering events normally, so re-validating in the Marketplace app is optional.</span></li>
   <li><b>Run a live webinar in n8n and Zapier together</b><span>Compare registrant counts between n8n and Zapier.</span></li>
   <li><b>Switch over</b><span>For each webinar, turn on its WEBINARS row flags in the <a href="#fix323a">staged order</a>, then pause that webinar's zap. (REG_CUTOVER isn't wired to anything, so it isn't the switch.)</span></li>
 </ol>
 
-<h2 id="fix322a">Fixing 322a (draft)</h2>
-<p class="dim">Keep the 5-minute wait and the Pulse dedupe. Just move them after the reply to Zoom. No node renames. Not applied; needs Matt's approval.</p>
+<h2 id="fix322a">Fixing 322a (applied Sep 29)</h2>
+<p class="dim">✓ Applied and published Sep 29, and verified with a real webinar (see <a href="#issue-2">issue 2</a>). The 5-minute wait and the Pulse dedupe stay; they now run after the reply to Zoom. No existing nodes were renamed.</p>
 
 <div class="fix">
   <h3>New order</h3>
@@ -263,7 +275,7 @@
     <span class="node">skip mint?</span><span class="arrow">→</span>
     <span class="node">no: clean → upsert → … (unchanged)</span>
   </div>
-  <p class="dim">If <code>skip mint?</code> says yes (Pulse already created the webinar), the run ends at a new <code>execution_data (pulse skip)</code> node that records the webinar name, id and operator email.</p>
+  <p class="dim">If <code>skip mint?</code> says yes (Pulse already created the webinar), the run ends at a new <code>execution_data_pulse_skip</code> node that records the webinar name, id and operator email.</p>
 </div>
 
 <div class="fix">
@@ -275,7 +287,7 @@ remove  webhook_response → clean
 add     webhook_response → wait_5m
 remove  skip mint? [false] → zoom_validation
 add     skip mint? [false] → clean
-add     skip mint? [true]  → execution_data (pulse skip)   (new node)</code></pre>
+add     skip mint? [true]  → execution_data_pulse_skip   (new node)</code></pre>
   </details>
   <details><summary>2 · map_skip: carry the original Zoom payload through the wait</summary>
 <pre><code>const rows = $input.all().map(i =&gt; i.json).filter(r =&gt; r &amp;&amp; r.status);
@@ -314,7 +326,15 @@ b. test run with pinned data:
      webinar.created (web_portal, e.g. Deal Detective)       → reaches clean with real fields
 c. publish → Zoom Marketplace app → Event Subscriptions → re-validate the endpoint
 d. backfill with 322c: Deal Detective (10/1) and Co-Living (10/9–13)
-rollback: restore the current published version</code></pre>
+rollback: restore the version before the fix
+
+Sep 29 results:
+  a ✓ valid
+  b ✓ all three cases routed correctly with every write pinned; no WEBINARS rows written
+  c ✓ published; live validation ping answered in 0.33 s; a real webinar
+      (Business Buying with Pace Morby, 12:49 PM) was added end to end.
+      Zoom is delivering events, so re-validating is optional.
+  d ✕ skipped: no backfill of webinars created before Sep 29</code></pre>
   </details>
 </div>
 
@@ -384,7 +404,7 @@ FROM unmatched_registrations
 WHERE created_at &gt; now() - interval '21 days'
 GROUP BY tag, brand
 ORDER BY registrants DESC;</code></pre>
-  <p class="dim">Add each missing webinar with <code>322c. Zoom Webinar Backfill (form)</code>: the Sep 26 Gator webinar, plus the 2 that 322a dropped. Make sure the row's <code>ac_tag</code> exactly matches the AC tag.</p>
+  <p class="dim"><b>Updated Sep 29:</b> webinars created before Sep 29 (the Sep 26 Gator webinar and the 2 that 322a dropped) won't be backfilled. From Sep 29 on, 322a adds new webinars itself, but it leaves <code>ac_tag</code> empty. That field has to exactly match the AC tag before the hub can match registrants.</p>
   </details>
   <details><summary>5 · Switch over one webinar at a time (staged order)</summary>
 <pre><code>On that webinar's WEBINARS row, one flag at a time, checking runs after each:
